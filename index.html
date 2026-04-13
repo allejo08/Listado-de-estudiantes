@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asistencia Escolar Pro + AI</title>
+    <title>Asistencia Escolar Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
@@ -14,118 +14,152 @@
         @media print { .no-print { display: none !important; } .print-only { display: block !important; } }
         .print-only { display: none; }
         .tab-active { background-color: #eff6ff; color: #2563eb; border-bottom: 2px solid #2563eb; }
+        .card-shadow { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02); }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen">
+<body class="bg-[#f8fafc] min-h-screen">
 
     <div id="app" class="flex flex-col min-h-screen">
+        <!-- Header Estilo Premium -->
         <header class="bg-white border-b border-slate-200 sticky top-0 z-30 no-print">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between h-16 items-center">
-                    <div class="flex items-center gap-3">
-                        <div class="bg-blue-600 p-2 rounded-lg"><i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i></div>
-                        <span class="text-xl font-bold text-slate-900">Asistencia Pro</span>
+                <div class="flex justify-between h-20 items-center">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-blue-600 p-2.5 rounded-xl shadow-lg shadow-blue-100">
+                            <i data-lucide="graduation-cap" class="w-7 h-7 text-white"></i>
+                        </div>
+                        <span class="text-2xl font-extrabold text-slate-900 tracking-tight">Asistencia Escolar</span>
                     </div>
-                    <nav class="flex h-full">
-                        <button onclick="switchTab('attendance')" id="tab-attendance" class="flex items-center gap-2 px-4 h-full text-sm font-medium transition-all border-b-2 border-transparent">
-                            <i data-lucide="clipboard-list" class="w-5 h-5"></i> <span class="hidden md:inline">Asistencia</span>
+                    
+                    <nav class="flex h-full items-center gap-2">
+                        <button onclick="switchTab('attendance')" id="tab-attendance" class="flex items-center gap-2 px-6 py-2 rounded-xl text-sm font-bold transition-all hover:bg-slate-50">
+                            <i data-lucide="clipboard-list" class="w-5 h-5"></i> Asistencia
                         </button>
-                        <button onclick="switchTab('students')" id="tab-students" class="flex items-center gap-2 px-4 h-full text-sm font-medium transition-all border-b-2 border-transparent">
-                            <i data-lucide="users" class="w-5 h-5"></i> <span class="hidden md:inline">Estudiantes</span>
+                        <button onclick="switchTab('students')" id="tab-students" class="flex items-center gap-2 px-6 py-2 rounded-xl text-sm font-bold transition-all hover:bg-slate-50">
+                            <i data-lucide="users" class="w-5 h-5"></i> Estudiantes
                         </button>
-                        <button onclick="switchTab('reports')" id="tab-reports" class="flex items-center gap-2 px-4 h-full text-sm font-medium transition-all border-b-2 border-transparent">
-                            <i data-lucide="bar-chart-3" class="w-5 h-5"></i> <span class="hidden md:inline">Reportes</span>
+                        <button onclick="switchTab('reports')" id="tab-reports" class="flex items-center gap-2 px-6 py-2 rounded-xl text-sm font-bold transition-all hover:bg-slate-50">
+                            <i data-lucide="bar-chart-3" class="w-5 h-5"></i> Reportes
                         </button>
                     </nav>
-                    <button onclick="exportData()" class="p-2 text-slate-500 hover:text-blue-600"><i data-lucide="download" class="w-5 h-5"></i></button>
+
+                    <div class="flex items-center gap-4 border-l pl-6 border-slate-100">
+                        <div class="text-right hidden md:block">
+                            <p class="text-sm font-bold text-slate-900">Usuario Local</p>
+                            <p class="text-xs text-slate-500">Modo Offline</p>
+                        </div>
+                        <button onclick="exportData()" class="p-2.5 text-slate-400 hover:text-blue-600 bg-slate-50 rounded-xl transition-all">
+                            <i data-lucide="download" class="w-5 h-5"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </header>
 
         <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
-            <!-- Asistencia -->
-            <section id="section-attendance" class="space-y-6">
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                    <div class="flex items-center gap-4">
-                        <div class="bg-blue-50 p-3 rounded-xl"><i data-lucide="calendar" class="w-6 h-6 text-blue-600"></i></div>
+            
+            <!-- SECCIÓN ESTUDIANTES (DISEÑO IGUAL AL PREVIEW) -->
+            <section id="section-students" class="hidden space-y-8">
+                <div class="bg-white p-8 rounded-[2rem] card-shadow border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div class="flex items-center gap-5">
+                        <div class="bg-blue-50 p-4 rounded-2xl">
+                            <i data-lucide="users" class="w-8 h-8 text-blue-600"></i>
+                        </div>
                         <div>
-                            <h2 class="text-xl font-bold text-slate-900">Llamado a Lista</h2>
-                            <input type="date" id="attendance-date" onchange="loadAttendance()" class="text-slate-500 text-sm bg-transparent border-none focus:ring-0 cursor-pointer">
+                            <h2 class="text-2xl font-black text-slate-900">Gestión de Estudiantes</h2>
+                            <p id="student-count" class="text-slate-500 font-medium">0 estudiantes registrados</p>
                         </div>
                     </div>
-                    <select id="filter-grade-attendance" onchange="renderAttendanceList()" class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-sm">
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="clearAllStudents()" class="flex items-center gap-2 px-5 py-3 bg-red-50 text-red-600 font-bold rounded-2xl hover:bg-red-100 transition-all">
+                            <i data-lucide="trash-2" class="w-5 h-5"></i> Limpiar
+                        </button>
+                        <button onclick="loadSampleData()" class="flex items-center gap-2 px-5 py-3 bg-amber-50 text-amber-600 font-bold rounded-2xl hover:bg-amber-100 transition-all border border-amber-100">
+                            <i data-lucide="database" class="w-5 h-5"></i> Cargar Listado Colegio
+                        </button>
+                        <button onclick="openModal('import')" class="flex items-center gap-2 px-5 py-3 bg-green-50 text-green-600 font-bold rounded-2xl hover:bg-green-100 transition-all border border-green-100">
+                            <i data-lucide="file-spreadsheet" class="w-5 h-5"></i> Importar Excel
+                        </button>
+                        <button onclick="openModal('student')" class="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-200">
+                            <i data-lucide="user-plus" class="w-5 h-5"></i> Nuevo Estudiante
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-4 no-print">
+                    <div class="relative flex-1">
+                        <i data-lucide="search" class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="search-student" oninput="renderStudents()" placeholder="Buscar por nombre..." class="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                    </div>
+                    <select id="filter-grade-students" onchange="renderStudents()" class="px-6 py-4 bg-white border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="all">Todos los grados</option>
                     </select>
                 </div>
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+
+                <div id="student-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </section>
+
+            <!-- SECCIÓN ASISTENCIA -->
+            <section id="section-attendance" class="space-y-6">
+                <div class="bg-white p-8 rounded-[2rem] card-shadow border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div class="flex items-center gap-5">
+                        <div class="bg-blue-50 p-4 rounded-2xl"><i data-lucide="calendar" class="w-8 h-8 text-blue-600"></i></div>
+                        <div>
+                            <h2 class="text-2xl font-black text-slate-900">Llamado a Lista</h2>
+                            <input type="date" id="attendance-date" onchange="loadAttendance()" class="text-slate-500 font-bold bg-transparent border-none focus:ring-0 cursor-pointer">
+                        </div>
+                    </div>
+                    <select id="filter-grade-attendance" onchange="renderAttendanceList()" class="px-6 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none"></select>
+                </div>
+                <div class="bg-white rounded-[2rem] card-shadow border border-slate-100 overflow-hidden">
                     <table class="w-full text-left">
-                        <thead class="bg-slate-50 border-b border-slate-200">
+                        <thead class="bg-slate-50/50 border-b border-slate-100">
                             <tr>
-                                <th class="px-6 py-4 text-sm font-bold text-slate-700">Estudiante</th>
-                                <th class="px-6 py-4 text-sm font-bold text-slate-700 text-center">Estado</th>
-                                <th class="px-6 py-4 text-sm font-bold text-slate-700 text-right no-print">Acciones</th>
+                                <th class="px-8 py-5 text-xs font-black text-slate-400 uppercase tracking-widest">Estudiante</th>
+                                <th class="px-8 py-5 text-xs font-black text-slate-400 uppercase tracking-widest text-center">Estado</th>
+                                <th class="px-8 py-5 text-xs font-black text-slate-400 uppercase tracking-widest text-right no-print">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody id="attendance-list" class="divide-y divide-slate-100"></tbody>
+                        <tbody id="attendance-list" class="divide-y divide-slate-50"></tbody>
                     </table>
                 </div>
             </section>
 
-            <!-- Estudiantes -->
-            <section id="section-students" class="hidden space-y-6">
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                    <div>
-                        <h2 class="text-xl font-bold text-slate-900">Estudiantes</h2>
-                        <p id="student-count" class="text-slate-500 text-xs font-medium">0 registrados</p>
-                    </div>
-                    <div class="flex flex-wrap gap-2">
-                        <button onclick="clearAllStudents()" class="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 transition-all">
-                            <i data-lucide="trash-2" class="w-5 h-5"></i> Limpiar Todo
-                        </button>
-                        <button onclick="openModal('import')" class="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-600 font-bold rounded-xl hover:bg-green-100 transition-all">
-                            <i data-lucide="file-spreadsheet" class="w-5 h-5"></i> Importar Excel
-                        </button>
-                        <button onclick="openModal('student')" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all">
-                            <i data-lucide="user-plus" class="w-5 h-5"></i> Nuevo
-                        </button>
-                    </div>
-                </div>
-                <div id="student-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-            </section>
-
-            <!-- Reportes -->
+            <!-- SECCIÓN REPORTES -->
             <section id="section-reports" class="hidden space-y-8">
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                    <h3 class="font-bold mb-4">Asistencia por Grado</h3>
-                    <canvas id="gradeChart"></canvas>
+                <div class="bg-white p-8 rounded-[2rem] card-shadow border border-slate-100">
+                    <h3 class="text-xl font-black text-slate-900 mb-6">Estadísticas por Grado</h3>
+                    <div class="h-[400px]">
+                        <canvas id="gradeChart"></canvas>
+                    </div>
                 </div>
             </section>
         </main>
     </div>
 
     <!-- Modales -->
-    <div id="modal-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
-        <div id="modal-student" class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 hidden">
-            <h3 class="text-xl font-bold mb-6" id="modal-title">Nuevo Estudiante</h3>
-            <form id="student-form" class="space-y-4">
+    <div id="modal-overlay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
+        <div id="modal-student" class="bg-white rounded-[2.5rem] shadow-2xl max-w-lg w-full p-10 hidden">
+            <h3 class="text-2xl font-black text-slate-900 mb-8" id="modal-title">Nuevo Estudiante</h3>
+            <form id="student-form" class="space-y-5">
                 <input type="hidden" id="edit-id">
-                <input type="text" id="s-name" placeholder="Nombre" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
-                <input type="text" id="s-grade" placeholder="Grado" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
-                <input type="text" id="s-phone" placeholder="Teléfono" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
-                <div class="flex gap-3">
-                    <button type="button" onclick="closeModal()" class="flex-1 py-3 border border-slate-200 rounded-xl font-bold">Cancelar</button>
-                    <button type="submit" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold">Guardar</button>
+                <input type="text" id="s-name" placeholder="Nombre Completo" required class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 transition-all">
+                <input type="text" id="s-grade" placeholder="Grado (Ej: SEXTO-1)" required class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 transition-all">
+                <input type="text" id="s-phone" placeholder="Teléfono / Acudiente" class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 transition-all">
+                <div class="flex gap-4 pt-4">
+                    <button type="button" onclick="closeModal()" class="flex-1 py-4 font-bold text-slate-500 hover:bg-slate-50 rounded-2xl transition-all">Cancelar</button>
+                    <button type="submit" class="flex-1 py-4 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all">Guardar</button>
                 </div>
             </form>
         </div>
 
-        <div id="modal-import" class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 hidden">
-            <h3 class="text-xl font-bold mb-4">Importar Excel</h3>
-            <p class="text-xs text-slate-500 mb-4">Asegúrate de que la columna A sea el Nombre y la B el Grado.</p>
-            <input type="file" id="excel-file" accept=".xlsx" class="mb-6 block w-full text-sm">
-            <div class="flex gap-3">
-                <button onclick="closeModal()" class="flex-1 py-3 border border-slate-200 rounded-xl font-bold">Cerrar</button>
-                <button onclick="processExcel()" class="flex-1 py-3 bg-green-600 text-white rounded-xl font-bold">Procesar</button>
+        <div id="modal-import" class="bg-white rounded-[2.5rem] shadow-2xl max-w-md w-full p-10 hidden">
+            <h3 class="text-2xl font-black text-slate-900 mb-4">Importar Excel</h3>
+            <p class="text-slate-500 mb-8 font-medium">Selecciona tu archivo. El sistema detectará automáticamente los nombres y grados.</p>
+            <input type="file" id="excel-file" accept=".xlsx" class="mb-8 block w-full text-sm text-slate-500 file:mr-4 file:py-3 file:px-6 file:rounded-2xl file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+            <div class="flex gap-4">
+                <button onclick="closeModal()" class="flex-1 py-4 font-bold text-slate-500">Cerrar</button>
+                <button onclick="processExcel()" class="flex-1 py-4 bg-green-600 text-white font-bold rounded-2xl shadow-lg shadow-green-100 hover:bg-green-700 transition-all">Procesar</button>
             </div>
         </div>
     </div>
@@ -142,14 +176,17 @@
         };
 
         function updateStudentCount() {
-            document.getElementById('student-count').innerText = `${students.length} registrados`;
+            const count = students.length;
+            document.getElementById('student-count').innerText = `${count} estudiantes registrados`;
         }
 
         function switchTab(tab) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
             document.getElementById(`section-${tab}`).classList.remove('hidden');
-            document.querySelectorAll('nav button').forEach(b => b.classList.remove('tab-active'));
-            document.getElementById(`tab-${tab}`).classList.add('tab-active');
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('tab-active', 'bg-blue-50', 'text-blue-600'));
+            const activeBtn = document.getElementById(`tab-${tab}`);
+            activeBtn.classList.add('tab-active', 'bg-blue-50', 'text-blue-600');
+            
             if(tab === 'students') renderStudents();
             if(tab === 'attendance') renderAttendanceList();
             if(tab === 'reports') renderCharts();
@@ -157,43 +194,37 @@
 
         function renderStudents() {
             const grid = document.getElementById('student-grid');
-            if(students.length === 0) {
-                grid.innerHTML = `<div class="col-span-full py-20 text-center text-slate-400">No hay estudiantes.</div>`;
+            const search = document.getElementById('search-student').value.toLowerCase();
+            const gradeFilter = document.getElementById('filter-grade-students').value;
+            
+            let filtered = students.filter(s => 
+                (s.name.toLowerCase().includes(search)) && 
+                (gradeFilter === 'all' || s.grade === gradeFilter)
+            );
+
+            if(filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-20 text-center bg-white rounded-[2rem] border-2 border-dashed border-slate-100 text-slate-400 font-bold">No se encontraron estudiantes.</div>`;
             } else {
-                grid.innerHTML = students.map(s => `
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex justify-between items-center">
-                        <div>
-                            <h3 class="font-bold text-slate-900">${s.name}</h3>
-                            <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">${s.grade}</span>
+                grid.innerHTML = filtered.map(s => `
+                    <div class="bg-white p-8 rounded-[2rem] card-shadow border border-slate-100 hover:scale-[1.02] transition-all group">
+                        <div class="flex justify-between items-start mb-6">
+                            <div class="bg-slate-50 p-4 rounded-2xl group-hover:bg-blue-50 transition-colors">
+                                <i data-lucide="user" class="w-6 h-6 text-slate-400 group-hover:text-blue-500"></i>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="editStudent('${s.id}')" class="p-2 text-slate-300 hover:text-blue-600 transition-colors"><i data-lucide="edit-2" class="w-5 h-5"></i></button>
+                                <button onclick="deleteStudent('${s.id}')" class="p-2 text-slate-300 hover:text-red-600 transition-colors"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
+                            </div>
                         </div>
-                        <div class="flex gap-2">
-                            <button onclick="editStudent('${s.id}')" class="text-slate-400 hover:text-blue-600"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
-                            <button onclick="deleteStudent('${s.id}')" class="text-slate-400 hover:text-red-600"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        <h3 class="text-lg font-black text-slate-900 mb-1">${s.name}</h3>
+                        <span class="inline-block px-3 py-1 bg-blue-50 text-blue-600 text-xs font-black rounded-lg uppercase mb-4">${s.grade}</span>
+                        <div class="pt-4 border-t border-slate-50 flex items-center gap-3 text-slate-400 text-sm font-medium">
+                            <i data-lucide="phone" class="w-4 h-4"></i> ${s.phone || 'Sin contacto'}
                         </div>
                     </div>
                 `).join('');
             }
             lucide.createIcons();
-            updateStudentCount();
-        }
-
-        function clearAllStudents() {
-            if(confirm('¿BORRAR TODO EL LISTADO? Esta acción no se puede deshacer.')) {
-                students = [];
-                saveData();
-                renderStudents();
-                updateGradesFilter();
-                alert('Listado vaciado.');
-            }
-        }
-
-        function deleteStudent(id) {
-            if(confirm('¿Eliminar estudiante?')) {
-                students = students.filter(s => s.id !== id);
-                saveData();
-                renderStudents();
-                updateGradesFilter();
-            }
         }
 
         function processExcel() {
@@ -206,36 +237,35 @@
                 const data = e.target.result;
                 const workbook = XLSX.read(data, { type: 'binary' });
                 const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                
-                // Obtenemos los datos como una matriz de matrices (filas y columnas puras)
                 const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
                 
-                if(rows.length < 2) {
-                    alert('El archivo no tiene suficientes datos.');
-                    return;
+                // Buscamos la primera fila que parezca tener datos (saltando filas vacías arriba)
+                let startRow = 0;
+                for(let i = 0; i < rows.length; i++) {
+                    if(rows[i].length > 0 && rows[i].some(cell => cell !== null && cell !== "")) {
+                        startRow = i;
+                        break;
+                    }
                 }
 
-                // Buscamos en qué columna está cada cosa analizando la primera fila
-                const headers = rows[0].map(h => String(h).toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
+                const headers = rows[startRow].map(h => String(h || "").toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
                 
                 let nameIdx = headers.findIndex(h => h.includes('nombre') || h.includes('estudiante'));
                 let gradeIdx = headers.findIndex(h => h.includes('grado') || h.includes('curso'));
-                let phoneIdx = headers.findIndex(h => h.includes('telefono') || h.includes('celular'));
-
-                // Si no encuentra por nombre, usamos las posiciones por defecto A=0, B=1
+                
+                // Si no hay encabezados claros, usamos A=0 y B=1
                 if(nameIdx === -1) nameIdx = 0;
                 if(gradeIdx === -1) gradeIdx = 1;
-                if(phoneIdx === -1) phoneIdx = 2;
 
                 const newStudents = [];
-                for(let i = 1; i < rows.length; i++) {
+                for(let i = startRow + 1; i < rows.length; i++) {
                     const row = rows[i];
-                    if(row[nameIdx]) { // Solo agregamos si hay un nombre
+                    if(row && row[nameIdx] && String(row[nameIdx]).trim() !== "") {
                         newStudents.push({
                             id: Math.random().toString(36).substr(2, 9),
-                            name: String(row[nameIdx] || "Sin Nombre").trim(),
+                            name: String(row[nameIdx]).trim(),
                             grade: String(row[gradeIdx] || "Sin Grado").trim(),
-                            phone: String(row[phoneIdx] || "").trim()
+                            phone: String(row[2] || "").trim()
                         });
                     }
                 }
@@ -244,41 +274,61 @@
                 saveData();
                 closeModal();
                 renderStudents();
-                updateGradesFilter();
-                alert(`Se importaron ${newStudents.length} estudiantes correctamente.`);
+                alert(`¡Éxito! Se importaron ${newStudents.length} estudiantes.`);
             };
             reader.readAsBinaryString(file);
+        }
+
+        function loadSampleData() {
+            if(confirm('¿Cargar datos de ejemplo del colegio?')) {
+                const sample = [
+                    { id: '1', name: 'Acosta Vargas Samuel David', grade: 'SEXTO-1', phone: '' },
+                    { id: '2', name: 'Cardona Aizama Reily Andres', grade: 'SEXTO-1', phone: '' },
+                    { id: '3', name: 'Cañas Espinosa Emiliano', grade: 'SEXTO-1', phone: '' },
+                    { id: '4', name: 'Cordoba Ospina Isabella', grade: 'SEXTO-1', phone: '' },
+                    { id: '5', name: 'Acosta Rengifo Melissa', grade: 'SEXTO-2', phone: '' },
+                    { id: '6', name: 'Aisama Echirua Heidy Arelis', grade: 'SEXTO-2', phone: '' }
+                ];
+                students = students.concat(sample);
+                saveData();
+                renderStudents();
+            }
+        }
+
+        function clearAllStudents() {
+            if(confirm('¿Borrar TODOS los estudiantes?')) {
+                students = [];
+                saveData();
+                renderStudents();
+            }
         }
 
         function renderAttendanceList() {
             const date = document.getElementById('attendance-date').value;
             const gradeFilter = document.getElementById('filter-grade-attendance').value;
             const list = document.getElementById('attendance-list');
-            
             const filtered = students.filter(s => gradeFilter === 'all' || s.grade === gradeFilter);
             
-            if(filtered.length === 0) {
-                list.innerHTML = `<tr><td colspan="3" class="p-10 text-center text-slate-400">No hay estudiantes en este grado.</td></tr>`;
-            } else {
-                list.innerHTML = filtered.map(s => {
-                    const record = attendance[date]?.[s.id] || { status: 'pending' };
-                    return `
-                        <tr class="hover:bg-slate-50">
-                            <td class="px-6 py-4">
-                                <div class="font-medium text-slate-900">${s.name}</div>
-                                <div class="text-xs text-slate-400">${s.grade}</div>
-                            </td>
-                            <td class="px-6 py-4 flex justify-center gap-2">
-                                <button onclick="markAttendance('${s.id}', 'present')" class="p-2 rounded-lg ${record.status === 'present' ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-400'}"><i data-lucide="check-circle-2" class="w-6 h-6"></i></button>
-                                <button onclick="markAttendance('${s.id}', 'absent')" class="p-2 rounded-lg ${record.status === 'absent' ? 'bg-red-100 text-red-600' : 'bg-slate-100 text-slate-400'}"><i data-lucide="x-circle" class="w-6 h-6"></i></button>
-                            </td>
-                            <td class="px-6 py-4 text-right no-print">
-                                <button class="p-2 text-slate-400"><i data-lucide="message-square" class="w-5 h-5"></i></button>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
-            }
+            list.innerHTML = filtered.map(s => {
+                const record = attendance[date]?.[s.id] || { status: 'pending' };
+                return `
+                    <tr class="hover:bg-slate-50/50 transition-colors">
+                        <td class="px-8 py-6">
+                            <div class="font-bold text-slate-900">${s.name}</div>
+                            <div class="text-xs font-black text-blue-500 uppercase tracking-tighter">${s.grade}</div>
+                        </td>
+                        <td class="px-8 py-6">
+                            <div class="flex justify-center gap-3">
+                                <button onclick="markAttendance('${s.id}', 'present')" class="p-3 rounded-2xl transition-all ${record.status === 'present' ? 'bg-green-100 text-green-600 shadow-sm' : 'bg-slate-100 text-slate-300 hover:bg-green-50'}"><i data-lucide="check-circle-2" class="w-7 h-7"></i></button>
+                                <button onclick="markAttendance('${s.id}', 'absent')" class="p-3 rounded-2xl transition-all ${record.status === 'absent' ? 'bg-red-100 text-red-600 shadow-sm' : 'bg-slate-100 text-slate-300 hover:bg-red-50'}"><i data-lucide="x-circle" class="w-7 h-7"></i></button>
+                            </div>
+                        </td>
+                        <td class="px-8 py-6 text-right no-print">
+                            <button class="p-3 text-slate-300 hover:text-blue-600 hover:bg-blue-50 rounded-2xl transition-all"><i data-lucide="message-square" class="w-6 h-6"></i></button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
             lucide.createIcons();
         }
 
@@ -291,14 +341,16 @@
         }
 
         function updateGradesFilter() {
-            const filter = document.getElementById('filter-grade-attendance');
-            if(!filter) return;
             const grades = [...new Set(students.map(s => s.grade))].sort();
-            let options = '<option value="all">Todos los grados</option>';
-            grades.forEach(g => {
-                options += `<option value="${g}">${g}</option>`;
+            const filters = ['filter-grade-attendance', 'filter-grade-students'];
+            filters.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) {
+                    let options = '<option value="all">Todos los grados</option>';
+                    grades.forEach(g => options += `<option value="${g}">${g}</option>`);
+                    el.innerHTML = options;
+                }
             });
-            filter.innerHTML = options;
         }
 
         function openModal(type) {
@@ -309,16 +361,6 @@
         function closeModal() {
             document.getElementById('modal-overlay').classList.add('hidden');
             document.querySelectorAll('#modal-overlay > div').forEach(d => d.classList.add('hidden'));
-        }
-
-        function exportData() {
-            const data = { students, attendance };
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `asistencia_backup.json`;
-            a.click();
         }
 
         window.onload = () => {
