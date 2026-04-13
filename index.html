@@ -44,10 +44,10 @@
                     </nav>
 
                     <div class="flex items-center gap-3 border-l pl-6 border-slate-100">
-                        <button onclick="exportBackup()" class="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-xl hover:bg-slate-800 transition-all" title="Guardar Copia de Seguridad">
+                        <button onclick="exportBackup()" class="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-xl hover:bg-slate-800 transition-all">
                             <i data-lucide="save" class="w-4 h-4"></i> Guardar Como
                         </button>
-                        <button onclick="openModal('backup')" class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-xl hover:bg-slate-50 transition-all" title="Cargar Copia de Seguridad">
+                        <button onclick="openModal('backup')" class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-xl hover:bg-slate-50 transition-all">
                             <i data-lucide="upload-cloud" class="w-4 h-4"></i> Cargar Copia
                         </button>
                     </div>
@@ -128,7 +128,7 @@
         <!-- Modal Backup -->
         <div id="modal-backup" class="bg-white rounded-[2.5rem] shadow-2xl max-w-md w-full p-10 hidden">
             <h3 class="text-2xl font-black text-slate-900 mb-4">Cargar Copia de Seguridad</h3>
-            <p class="text-slate-500 mb-8 font-medium">Selecciona el archivo .json que descargaste previamente para restaurar todos tus datos.</p>
+            <p class="text-slate-500 mb-8 font-medium">Selecciona el archivo .json para restaurar tus datos.</p>
             <input type="file" id="backup-file" accept=".json" class="mb-8 block w-full text-sm text-slate-500">
             <div class="flex gap-4">
                 <button onclick="closeModal()" class="flex-1 py-4 font-bold text-slate-500">Cancelar</button>
@@ -139,7 +139,6 @@
         <!-- Modal Import Excel -->
         <div id="modal-import" class="bg-white rounded-[2.5rem] shadow-2xl max-w-md w-full p-10 hidden">
             <h3 class="text-2xl font-black text-slate-900 mb-4">Importar Excel</h3>
-            <p class="text-slate-500 mb-8 font-medium">El sistema detectará automáticamente los nombres y grados de tu archivo .xlsx.</p>
             <input type="file" id="excel-file" accept=".xlsx" class="mb-8 block w-full text-sm">
             <div class="flex gap-4">
                 <button onclick="closeModal()" class="flex-1 py-4 font-bold text-slate-500">Cerrar</button>
@@ -167,11 +166,17 @@
         let students = JSON.parse(localStorage.getItem('students')) || [];
         let attendance = JSON.parse(localStorage.getItem('attendance')) || {};
 
+        // --- FUNCIONES DE GUARDADO ---
         const saveData = () => {
             localStorage.setItem('students', JSON.stringify(students));
             localStorage.setItem('attendance', JSON.stringify(attendance));
-            updateGradesFilter();
             updateStudentCount();
+        };
+
+        // Guardar y actualizar filtros (solo cuando cambia la lista de estudiantes)
+        const saveStudentsAndRefresh = () => {
+            saveData();
+            updateGradesFilter();
         };
 
         function updateStudentCount() {
@@ -191,12 +196,7 @@
 
         // --- COPIA DE SEGURIDAD ---
         function exportBackup() {
-            const data = {
-                version: "2.0",
-                date: new Date().toISOString(),
-                students: students,
-                attendance: attendance
-            };
+            const data = { version: "2.0", date: new Date().toISOString(), students, attendance };
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -209,44 +209,37 @@
         function importBackup() {
             const fileInput = document.getElementById('backup-file');
             const file = fileInput.files[0];
-            if(!file) return alert('Selecciona un archivo .json');
-
+            if(!file) return;
             const reader = new FileReader();
             reader.onload = (e) => {
                 try {
                     const data = JSON.parse(e.target.result);
-                    if(!data.students || !data.attendance) throw new Error('Formato inválido');
-                    
-                    if(confirm('¿Restaurar esta copia? Se sobrescribirán los datos actuales.')) {
+                    if(confirm('¿Restaurar esta copia?')) {
                         students = data.students;
                         attendance = data.attendance;
-                        saveData();
+                        saveStudentsAndRefresh();
                         closeModal();
                         switchTab('attendance');
-                        alert('Copia de seguridad cargada con éxito.');
                     }
-                } catch (err) {
-                    alert('Error: El archivo no es una copia de seguridad válida.');
-                }
+                } catch (err) { alert('Archivo inválido'); }
             };
             reader.readAsText(file);
         }
 
-        // --- ASISTENCIA CON CORRECCIÓN ---
+        // --- ASISTENCIA (CORREGIDO ERROR DE FILTRO) ---
         function markAttendance(studentId, status) {
             const date = document.getElementById('attendance-date').value;
             if(!attendance[date]) attendance[date] = {};
             
             const currentStatus = attendance[date][studentId]?.status;
             
-            // Si el botón presionado es el mismo que ya está activo, lo borramos (Toggle)
             if (currentStatus === status) {
                 attendance[date][studentId].status = 'pending';
             } else {
                 attendance[date][studentId] = { status: status };
             }
             
-            saveData();
+            saveData(); // Guardamos datos sin refrescar los filtros (para no perder la selección)
             renderAttendanceList();
         }
 
@@ -324,10 +317,9 @@
                     if(rows[i][nIdx]) newS.push({ id: Math.random().toString(36).substr(2, 9), name: String(rows[i][nIdx]).trim(), grade: String(rows[i][gIdx] || "Sin Grado").trim(), phone: String(rows[i][2] || "").trim() });
                 }
                 students = students.concat(newS);
-                saveData();
+                saveStudentsAndRefresh();
                 closeModal();
                 renderStudents();
-                alert(`Importados ${newS.length} estudiantes.`);
             };
             reader.readAsBinaryString(file);
         }
@@ -335,18 +327,37 @@
         function loadSampleData() {
             if(confirm('¿Cargar datos de ejemplo?')) {
                 students = students.concat([{ id: '1', name: 'Acosta Vargas Samuel David', grade: 'SEXTO-1', phone: '' }, { id: '2', name: 'Cardona Aizama Reily Andres', grade: 'SEXTO-1', phone: '' }]);
-                saveData();
+                saveStudentsAndRefresh();
                 renderStudents();
             }
         }
 
-        function clearAllStudents() { if(confirm('¿Borrar TODO?')) { students = []; saveData(); renderStudents(); } }
-        function deleteStudent(id) { if(confirm('¿Eliminar?')) { students = students.filter(s => s.id !== id); saveData(); renderStudents(); } }
+        function clearAllStudents() { if(confirm('¿Borrar TODO?')) { students = []; saveStudentsAndRefresh(); renderStudents(); } }
+        function deleteStudent(id) { if(confirm('¿Eliminar?')) { students = students.filter(s => s.id !== id); saveStudentsAndRefresh(); renderStudents(); } }
+        
+        document.getElementById('student-form').onsubmit = (e) => {
+            e.preventDefault();
+            const id = document.getElementById('edit-id').value || Date.now().toString();
+            const student = { id, name: document.getElementById('s-name').value, grade: document.getElementById('s-grade').value, phone: document.getElementById('s-phone').value };
+            const idx = students.findIndex(s => s.id === id);
+            if(idx > -1) students[idx] = student; else students.push(student);
+            saveStudentsAndRefresh();
+            closeModal();
+            renderStudents();
+        };
+
         function updateGradesFilter() {
             const grades = [...new Set(students.map(s => s.grade))].sort();
             ['filter-grade-attendance', 'filter-grade-students'].forEach(id => {
                 const el = document.getElementById(id);
-                if(el) el.innerHTML = '<option value="all">Todos los grados</option>' + grades.map(g => `<option value="${g}">${g}</option>`).join('');
+                if(el) {
+                    const currentVal = el.value; // Guardamos lo que el usuario seleccionó
+                    el.innerHTML = '<option value="all">Todos los grados</option>' + grades.map(g => `<option value="${g}">${g}</option>`).join('');
+                    // Restauramos la selección si todavía existe
+                    if (grades.includes(currentVal) || currentVal === 'all') {
+                        el.value = currentVal;
+                    }
+                }
             });
         }
 
