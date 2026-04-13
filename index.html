@@ -10,17 +10,17 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        body { font-family: 'Inter', sans-serif; }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
         @media print { .no-print { display: none !important; } .print-only { display: block !important; } }
         .print-only { display: none; }
         .tab-active { background-color: #eff6ff; color: #2563eb; }
         .card-shadow { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02); }
     </style>
 </head>
-<body class="bg-[#f8fafc] min-h-screen">
+<body class="min-h-screen">
 
     <div id="app" class="flex flex-col min-h-screen">
-        <!-- Header Premium -->
+        <!-- Header -->
         <header class="bg-white border-b border-slate-200 sticky top-0 z-30 no-print">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between h-20 items-center">
@@ -38,9 +38,6 @@
                         <button onclick="switchTab('students')" id="tab-students" class="flex items-center gap-2 px-6 py-2 rounded-xl text-sm font-bold transition-all hover:bg-slate-50">
                             <i data-lucide="users" class="w-5 h-5"></i> Estudiantes
                         </button>
-                        <button onclick="switchTab('reports')" id="tab-reports" class="flex items-center gap-2 px-6 py-2 rounded-xl text-sm font-bold transition-all hover:bg-slate-50">
-                            <i data-lucide="bar-chart-3" class="w-5 h-5"></i> Reportes
-                        </button>
                     </nav>
 
                     <div class="flex items-center gap-3 border-l pl-6 border-slate-100">
@@ -57,35 +54,6 @@
 
         <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
             
-            <!-- SECCIÓN ESTUDIANTES -->
-            <section id="section-students" class="hidden space-y-8">
-                <div class="bg-white p-8 rounded-[2rem] card-shadow border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div class="flex items-center gap-5">
-                        <div class="bg-blue-50 p-4 rounded-2xl"><i data-lucide="users" class="w-8 h-8 text-blue-600"></i></div>
-                        <div>
-                            <h2 class="text-2xl font-black text-slate-900">Gestión de Estudiantes</h2>
-                            <p id="student-count" class="text-slate-500 font-medium">0 estudiantes registrados</p>
-                        </div>
-                    </div>
-                    <div class="flex flex-wrap gap-3">
-                        <button onclick="clearAllStudents()" class="px-5 py-3 bg-red-50 text-red-600 font-bold rounded-2xl hover:bg-red-100 transition-all">Limpiar</button>
-                        <button onclick="loadSampleData()" class="px-5 py-3 bg-amber-50 text-amber-600 font-bold rounded-2xl hover:bg-amber-100 transition-all border border-amber-100">Cargar Ejemplo</button>
-                        <button onclick="openModal('import')" class="px-5 py-3 bg-green-50 text-green-600 font-bold rounded-2xl hover:bg-green-100 transition-all border border-green-100">Importar Excel</button>
-                        <button onclick="openModal('student')" class="px-6 py-3 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-200">+ Nuevo</button>
-                    </div>
-                </div>
-
-                <div class="flex flex-col md:flex-row gap-4 no-print">
-                    <div class="relative flex-1">
-                        <i data-lucide="search" class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" id="search-student" oninput="renderStudents()" placeholder="Buscar por nombre..." class="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 transition-all">
-                    </div>
-                    <select id="filter-grade-students" onchange="renderStudents()" class="px-6 py-4 bg-white border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none"></select>
-                </div>
-
-                <div id="student-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-            </section>
-
             <!-- SECCIÓN ASISTENCIA -->
             <section id="section-attendance" class="space-y-6">
                 <div class="bg-white p-8 rounded-[2rem] card-shadow border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -93,10 +61,13 @@
                         <div class="bg-blue-50 p-4 rounded-2xl"><i data-lucide="calendar" class="w-8 h-8 text-blue-600"></i></div>
                         <div>
                             <h2 class="text-2xl font-black text-slate-900">Llamado a Lista</h2>
-                            <input type="date" id="attendance-date" onchange="loadAttendance()" class="text-slate-500 font-bold bg-transparent border-none focus:ring-0 cursor-pointer">
+                            <input type="date" id="attendance-date" onchange="renderAttendanceList()" class="text-slate-500 font-bold bg-transparent border-none focus:ring-0 cursor-pointer">
                         </div>
                     </div>
-                    <select id="filter-grade-attendance" onchange="renderAttendanceList()" class="px-6 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none"></select>
+                    <!-- FILTRO DE GRADO -->
+                    <select id="filter-grade-attendance" onchange="renderAttendanceList()" class="px-6 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="all">Todos los grados</option>
+                    </select>
                 </div>
                 <div class="bg-white rounded-[2rem] card-shadow border border-slate-100 overflow-hidden">
                     <table class="w-full text-left">
@@ -112,31 +83,38 @@
                 </div>
             </section>
 
-            <!-- SECCIÓN REPORTES -->
-            <section id="section-reports" class="hidden space-y-8">
-                <div class="bg-white p-8 rounded-[2rem] card-shadow border border-slate-100">
-                    <h3 class="text-xl font-black text-slate-900 mb-6">Asistencia por Grado</h3>
-                    <div class="h-[400px]"><canvas id="gradeChart"></canvas></div>
+            <!-- SECCIÓN ESTUDIANTES -->
+            <section id="section-students" class="hidden space-y-8">
+                <div class="bg-white p-8 rounded-[2rem] card-shadow border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div class="flex items-center gap-5">
+                        <div class="bg-blue-50 p-4 rounded-2xl"><i data-lucide="users" class="w-8 h-8 text-blue-600"></i></div>
+                        <div>
+                            <h2 class="text-2xl font-black text-slate-900">Estudiantes</h2>
+                            <p id="student-count" class="text-slate-500 font-medium">0 registrados</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="clearAllStudents()" class="px-5 py-3 bg-red-50 text-red-600 font-bold rounded-2xl hover:bg-red-100 transition-all">Limpiar Todo</button>
+                        <button onclick="openModal('import')" class="px-5 py-3 bg-green-50 text-green-600 font-bold rounded-2xl hover:bg-green-100 transition-all border border-green-100">Importar Excel</button>
+                        <button onclick="openModal('student')" class="px-6 py-3 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-200">+ Nuevo</button>
+                    </div>
                 </div>
+                <div id="student-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
             </section>
         </main>
     </div>
 
     <!-- Modales -->
     <div id="modal-overlay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
-        
-        <!-- Modal Backup -->
         <div id="modal-backup" class="bg-white rounded-[2.5rem] shadow-2xl max-w-md w-full p-10 hidden">
-            <h3 class="text-2xl font-black text-slate-900 mb-4">Cargar Copia de Seguridad</h3>
-            <p class="text-slate-500 mb-8 font-medium">Selecciona el archivo .json para restaurar tus datos.</p>
-            <input type="file" id="backup-file" accept=".json" class="mb-8 block w-full text-sm text-slate-500">
+            <h3 class="text-2xl font-black text-slate-900 mb-4">Restaurar Copia</h3>
+            <input type="file" id="backup-file" accept=".json" class="mb-8 block w-full text-sm">
             <div class="flex gap-4">
                 <button onclick="closeModal()" class="flex-1 py-4 font-bold text-slate-500">Cancelar</button>
-                <button onclick="importBackup()" class="flex-1 py-4 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all">Restaurar Datos</button>
+                <button onclick="importBackup()" class="flex-1 py-4 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all">Restaurar</button>
             </div>
         </div>
 
-        <!-- Modal Import Excel -->
         <div id="modal-import" class="bg-white rounded-[2.5rem] shadow-2xl max-w-md w-full p-10 hidden">
             <h3 class="text-2xl font-black text-slate-900 mb-4">Importar Excel</h3>
             <input type="file" id="excel-file" accept=".xlsx" class="mb-8 block w-full text-sm">
@@ -146,7 +124,6 @@
             </div>
         </div>
 
-        <!-- Modal Estudiante -->
         <div id="modal-student" class="bg-white rounded-[2.5rem] shadow-2xl max-w-lg w-full p-10 hidden">
             <h3 class="text-2xl font-black text-slate-900 mb-8" id="modal-title">Nuevo Estudiante</h3>
             <form id="student-form" class="space-y-5">
@@ -166,87 +143,58 @@
         let students = JSON.parse(localStorage.getItem('students')) || [];
         let attendance = JSON.parse(localStorage.getItem('attendance')) || {};
 
-        // --- FUNCIONES DE GUARDADO ---
+        // --- FUNCIONES DE DATOS ---
         const saveData = () => {
             localStorage.setItem('students', JSON.stringify(students));
             localStorage.setItem('attendance', JSON.stringify(attendance));
-            updateStudentCount();
+            document.getElementById('student-count').innerText = `${students.length} registrados`;
         };
 
-        // Guardar y actualizar filtros (solo cuando cambia la lista de estudiantes)
-        const saveStudentsAndRefresh = () => {
-            saveData();
-            updateGradesFilter();
+        // Actualiza los filtros SOLO cuando cambia la lista de estudiantes (importar/borrar)
+        const refreshFilters = () => {
+            const grades = [...new Set(students.map(s => s.grade))].sort();
+            const filter = document.getElementById('filter-grade-attendance');
+            const currentVal = filter.value;
+            
+            filter.innerHTML = '<option value="all">Todos los grados</option>' + 
+                grades.map(g => `<option value="${g}">${g}</option>`).join('');
+            
+            if (grades.includes(currentVal)) filter.value = currentVal;
+            else filter.value = 'all';
         };
-
-        function updateStudentCount() {
-            document.getElementById('student-count').innerText = `${students.length} estudiantes registrados`;
-        }
 
         function switchTab(tab) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
             document.getElementById(`section-${tab}`).classList.remove('hidden');
             document.querySelectorAll('nav button').forEach(b => b.classList.remove('tab-active', 'bg-blue-50', 'text-blue-600'));
-            const activeBtn = document.getElementById(`tab-${tab}`);
-            activeBtn.classList.add('tab-active', 'bg-blue-50', 'text-blue-600');
+            document.getElementById(`tab-${tab}`).classList.add('tab-active', 'bg-blue-50', 'text-blue-600');
             if(tab === 'students') renderStudents();
             if(tab === 'attendance') renderAttendanceList();
-            if(tab === 'reports') renderCharts();
         }
 
-        // --- COPIA DE SEGURIDAD ---
-        function exportBackup() {
-            const data = { version: "2.0", date: new Date().toISOString(), students, attendance };
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `backup_asistencia_${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
-        function importBackup() {
-            const fileInput = document.getElementById('backup-file');
-            const file = fileInput.files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    if(confirm('¿Restaurar esta copia?')) {
-                        students = data.students;
-                        attendance = data.attendance;
-                        saveStudentsAndRefresh();
-                        closeModal();
-                        switchTab('attendance');
-                    }
-                } catch (err) { alert('Archivo inválido'); }
-            };
-            reader.readAsText(file);
-        }
-
-        // --- ASISTENCIA (CORREGIDO ERROR DE FILTRO) ---
+        // --- ASISTENCIA (CORREGIDO) ---
         function markAttendance(studentId, status) {
             const date = document.getElementById('attendance-date').value;
             if(!attendance[date]) attendance[date] = {};
             
             const currentStatus = attendance[date][studentId]?.status;
             
+            // Toggle: Si ya tiene ese estado, lo quitamos
             if (currentStatus === status) {
                 attendance[date][studentId].status = 'pending';
             } else {
                 attendance[date][studentId] = { status: status };
             }
             
-            saveData(); // Guardamos datos sin refrescar los filtros (para no perder la selección)
-            renderAttendanceList();
+            saveData();
+            renderAttendanceList(); // Esto ya no reinicia el filtro porque no llama a refreshFilters
         }
 
         function renderAttendanceList() {
             const date = document.getElementById('attendance-date').value;
             const gradeFilter = document.getElementById('filter-grade-attendance').value;
             const list = document.getElementById('attendance-list');
+            
             const filtered = students.filter(s => gradeFilter === 'all' || s.grade === gradeFilter);
             
             list.innerHTML = filtered.map(s => {
@@ -272,31 +220,19 @@
             lucide.createIcons();
         }
 
-        // --- GESTIÓN DE ESTUDIANTES ---
+        // --- GESTIÓN ESTUDIANTES ---
         function renderStudents() {
             const grid = document.getElementById('student-grid');
-            const search = document.getElementById('search-student').value.toLowerCase();
-            const gradeFilter = document.getElementById('filter-grade-students').value;
-            let filtered = students.filter(s => s.name.toLowerCase().includes(search) && (gradeFilter === 'all' || s.grade === gradeFilter));
-
-            if(filtered.length === 0) {
-                grid.innerHTML = `<div class="col-span-full py-20 text-center bg-white rounded-[2rem] border-2 border-dashed border-slate-100 text-slate-400 font-bold">No hay estudiantes.</div>`;
-            } else {
-                grid.innerHTML = filtered.map(s => `
-                    <div class="bg-white p-8 rounded-[2rem] card-shadow border border-slate-100 hover:scale-[1.02] transition-all group">
-                        <div class="flex justify-between items-start mb-6">
-                            <div class="bg-slate-50 p-4 rounded-2xl group-hover:bg-blue-50 transition-colors"><i data-lucide="user" class="w-6 h-6 text-slate-400 group-hover:text-blue-500"></i></div>
-                            <div class="flex gap-2">
-                                <button onclick="editStudent('${s.id}')" class="p-2 text-slate-300 hover:text-blue-600"><i data-lucide="edit-2" class="w-5 h-5"></i></button>
-                                <button onclick="deleteStudent('${s.id}')" class="p-2 text-slate-300 hover:text-red-600"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
-                            </div>
-                        </div>
-                        <h3 class="text-lg font-black text-slate-900 mb-1">${s.name}</h3>
-                        <span class="inline-block px-3 py-1 bg-blue-50 text-blue-600 text-xs font-black rounded-lg uppercase mb-4">${s.grade}</span>
-                        <div class="pt-4 border-t border-slate-50 flex items-center gap-3 text-slate-400 text-sm font-medium"><i data-lucide="phone" class="w-4 h-4"></i> ${s.phone || 'Sin contacto'}</div>
+            grid.innerHTML = students.map(s => `
+                <div class="bg-white p-8 rounded-[2rem] card-shadow border border-slate-100">
+                    <div class="flex justify-between items-start mb-6">
+                        <div class="bg-slate-50 p-4 rounded-2xl"><i data-lucide="user" class="w-6 h-6 text-slate-400"></i></div>
+                        <button onclick="deleteStudent('${s.id}')" class="p-2 text-slate-300 hover:text-red-600"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
                     </div>
-                `).join('');
-            }
+                    <h3 class="text-lg font-black text-slate-900 mb-1">${s.name}</h3>
+                    <span class="inline-block px-3 py-1 bg-blue-50 text-blue-600 text-xs font-black rounded-lg uppercase">${s.grade}</span>
+                </div>
+            `).join('');
             lucide.createIcons();
         }
 
@@ -309,64 +245,55 @@
                 const workbook = XLSX.read(e.target.result, { type: 'binary' });
                 const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
                 let startRow = rows.findIndex(r => r.length > 0 && r.some(c => c));
-                const headers = rows[startRow].map(h => String(h || "").toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
-                let nIdx = headers.findIndex(h => h.includes('nombre') || h.includes('estudiante')) === -1 ? 0 : headers.findIndex(h => h.includes('nombre') || h.includes('estudiante'));
-                let gIdx = headers.findIndex(h => h.includes('grado') || h.includes('curso')) === -1 ? 1 : headers.findIndex(h => h.includes('grado') || h.includes('curso'));
                 const newS = [];
                 for(let i = startRow + 1; i < rows.length; i++) {
-                    if(rows[i][nIdx]) newS.push({ id: Math.random().toString(36).substr(2, 9), name: String(rows[i][nIdx]).trim(), grade: String(rows[i][gIdx] || "Sin Grado").trim(), phone: String(rows[i][2] || "").trim() });
+                    if(rows[i][0]) newS.push({ id: Math.random().toString(36).substr(2, 9), name: String(rows[i][0]).trim(), grade: String(rows[i][1] || "Sin Grado").trim() });
                 }
                 students = students.concat(newS);
-                saveStudentsAndRefresh();
+                saveData();
+                refreshFilters();
                 closeModal();
                 renderStudents();
             };
             reader.readAsBinaryString(file);
         }
 
-        function loadSampleData() {
-            if(confirm('¿Cargar datos de ejemplo?')) {
-                students = students.concat([{ id: '1', name: 'Acosta Vargas Samuel David', grade: 'SEXTO-1', phone: '' }, { id: '2', name: 'Cardona Aizama Reily Andres', grade: 'SEXTO-1', phone: '' }]);
-                saveStudentsAndRefresh();
-                renderStudents();
-            }
+        // --- BACKUP ---
+        function exportBackup() {
+            const data = { students, attendance };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `backup_asistencia.json`;
+            a.click();
         }
 
-        function clearAllStudents() { if(confirm('¿Borrar TODO?')) { students = []; saveStudentsAndRefresh(); renderStudents(); } }
-        function deleteStudent(id) { if(confirm('¿Eliminar?')) { students = students.filter(s => s.id !== id); saveStudentsAndRefresh(); renderStudents(); } }
-        
-        document.getElementById('student-form').onsubmit = (e) => {
-            e.preventDefault();
-            const id = document.getElementById('edit-id').value || Date.now().toString();
-            const student = { id, name: document.getElementById('s-name').value, grade: document.getElementById('s-grade').value, phone: document.getElementById('s-phone').value };
-            const idx = students.findIndex(s => s.id === id);
-            if(idx > -1) students[idx] = student; else students.push(student);
-            saveStudentsAndRefresh();
-            closeModal();
-            renderStudents();
-        };
-
-        function updateGradesFilter() {
-            const grades = [...new Set(students.map(s => s.grade))].sort();
-            ['filter-grade-attendance', 'filter-grade-students'].forEach(id => {
-                const el = document.getElementById(id);
-                if(el) {
-                    const currentVal = el.value; // Guardamos lo que el usuario seleccionó
-                    el.innerHTML = '<option value="all">Todos los grados</option>' + grades.map(g => `<option value="${g}">${g}</option>`).join('');
-                    // Restauramos la selección si todavía existe
-                    if (grades.includes(currentVal) || currentVal === 'all') {
-                        el.value = currentVal;
-                    }
-                }
-            });
+        function importBackup() {
+            const fileInput = document.getElementById('backup-file');
+            const file = fileInput.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const data = JSON.parse(e.target.result);
+                students = data.students;
+                attendance = data.attendance;
+                saveData();
+                refreshFilters();
+                closeModal();
+                switchTab('attendance');
+            };
+            reader.readAsText(file);
         }
 
+        function clearAllStudents() { if(confirm('¿Borrar todo?')) { students = []; saveData(); refreshFilters(); renderStudents(); } }
+        function deleteStudent(id) { if(confirm('¿Eliminar?')) { students = students.filter(s => s.id !== id); saveData(); refreshFilters(); renderStudents(); } }
         function openModal(type) { document.getElementById('modal-overlay').classList.remove('hidden'); document.getElementById(`modal-${type}`).classList.remove('hidden'); }
         function closeModal() { document.getElementById('modal-overlay').classList.add('hidden'); document.querySelectorAll('#modal-overlay > div').forEach(d => d.classList.add('hidden')); }
 
         window.onload = () => {
             document.getElementById('attendance-date').value = new Date().toISOString().split('T')[0];
-            updateGradesFilter();
+            refreshFilters();
             switchTab('attendance');
             lucide.createIcons();
         };
