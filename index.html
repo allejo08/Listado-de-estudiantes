@@ -4,111 +4,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Asistencia Escolar Pro + AI</title>
-    
-    <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#2563eb">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    
-    <!-- SheetJS (Excel) -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
-    
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        
         body { font-family: 'Inter', sans-serif; }
-
-        @media print {
-            .no-print { display: none !important; }
-            .print-only { display: block !important; }
-            .card { border: 1px solid #e2e8f0 !important; box-shadow: none !important; }
-        }
-
+        @media print { .no-print { display: none !important; } .print-only { display: block !important; } }
         .print-only { display: none; }
-        
-        .tab-active {
-            background-color: #eff6ff;
-            color: #2563eb;
-            border-bottom: 2px solid #2563eb;
-        }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .tab-active { background-color: #eff6ff; color: #2563eb; border-bottom: 2px solid #2563eb; }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen">
 
-    <!-- App Container -->
     <div id="app" class="flex flex-col min-h-screen">
-        
-        <!-- Header -->
         <header class="bg-white border-b border-slate-200 sticky top-0 z-30 no-print">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between h-16 items-center">
                     <div class="flex items-center gap-3">
-                        <div class="bg-blue-600 p-2 rounded-lg">
-                            <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
-                        </div>
-                        <span class="text-xl font-bold text-slate-900 hidden sm:block">Asistencia Pro</span>
+                        <div class="bg-blue-600 p-2 rounded-lg"><i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i></div>
+                        <span class="text-xl font-bold text-slate-900">Asistencia Pro</span>
                     </div>
-
                     <nav class="flex h-full">
                         <button onclick="switchTab('attendance')" id="tab-attendance" class="flex items-center gap-2 px-4 h-full text-sm font-medium transition-all border-b-2 border-transparent">
-                            <i data-lucide="clipboard-list" class="w-5 h-5"></i>
-                            <span class="hidden md:inline">Asistencia</span>
+                            <i data-lucide="clipboard-list" class="w-5 h-5"></i> <span class="hidden md:inline">Asistencia</span>
                         </button>
                         <button onclick="switchTab('students')" id="tab-students" class="flex items-center gap-2 px-4 h-full text-sm font-medium transition-all border-b-2 border-transparent">
-                            <i data-lucide="users" class="w-5 h-5"></i>
-                            <span class="hidden md:inline">Estudiantes</span>
+                            <i data-lucide="users" class="w-5 h-5"></i> <span class="hidden md:inline">Estudiantes</span>
                         </button>
                         <button onclick="switchTab('reports')" id="tab-reports" class="flex items-center gap-2 px-4 h-full text-sm font-medium transition-all border-b-2 border-transparent">
-                            <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
-                            <span class="hidden md:inline">Reportes</span>
+                            <i data-lucide="bar-chart-3" class="w-5 h-5"></i> <span class="hidden md:inline">Reportes</span>
                         </button>
                     </nav>
-
-                    <div class="flex items-center gap-2">
-                        <button onclick="exportData()" class="p-2 text-slate-500 hover:text-blue-600" title="Descargar Copia de Seguridad">
-                            <i data-lucide="download" class="w-5 h-5"></i>
-                        </button>
-                    </div>
+                    <button onclick="exportData()" class="p-2 text-slate-500 hover:text-blue-600"><i data-lucide="download" class="w-5 h-5"></i></button>
                 </div>
             </div>
         </header>
 
-        <!-- Main Content -->
         <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
-            
-            <!-- Attendance Section -->
+            <!-- Asistencia -->
             <section id="section-attendance" class="space-y-6">
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                     <div class="flex items-center gap-4">
-                        <div class="bg-blue-50 p-3 rounded-xl">
-                            <i data-lucide="calendar" class="w-6 h-6 text-blue-600"></i>
-                        </div>
+                        <div class="bg-blue-50 p-3 rounded-xl"><i data-lucide="calendar" class="w-6 h-6 text-blue-600"></i></div>
                         <div>
                             <h2 class="text-xl font-bold text-slate-900">Llamado a Lista</h2>
                             <input type="date" id="attendance-date" onchange="loadAttendance()" class="text-slate-500 text-sm bg-transparent border-none focus:ring-0 cursor-pointer">
                         </div>
                     </div>
-                    <div class="flex gap-2 no-print">
-                        <select id="filter-grade-attendance" onchange="renderAttendanceList()" class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-sm">
-                            <option value="all">Todos los grados</option>
-                        </select>
-                    </div>
+                    <select id="filter-grade-attendance" onchange="renderAttendanceList()" class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-sm"></select>
                 </div>
-
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                     <table class="w-full text-left">
                         <thead class="bg-slate-50 border-b border-slate-200">
@@ -118,24 +64,17 @@
                                 <th class="px-6 py-4 text-sm font-bold text-slate-700 text-right no-print">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody id="attendance-list" class="divide-y divide-slate-100">
-                            <!-- JS populate -->
-                        </tbody>
+                        <tbody id="attendance-list" class="divide-y divide-slate-100"></tbody>
                     </table>
                 </div>
             </section>
 
-            <!-- Students Section -->
+            <!-- Estudiantes -->
             <section id="section-students" class="hidden space-y-6">
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                    <div class="flex items-center gap-4">
-                        <div class="bg-blue-50 p-3 rounded-xl">
-                            <i data-lucide="users" class="w-6 h-6 text-blue-600"></i>
-                        </div>
-                        <div>
-                            <h2 class="text-xl font-bold text-slate-900">Estudiantes</h2>
-                            <p id="student-count" class="text-slate-500 text-xs font-medium">0 registrados</p>
-                        </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900">Estudiantes</h2>
+                        <p id="student-count" class="text-slate-500 text-xs font-medium">0 registrados</p>
                     </div>
                     <div class="flex flex-wrap gap-2">
                         <button onclick="clearAllStudents()" class="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 transition-all">
@@ -144,168 +83,89 @@
                         <button onclick="openModal('import')" class="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-600 font-bold rounded-xl hover:bg-green-100 transition-all">
                             <i data-lucide="file-spreadsheet" class="w-5 h-5"></i> Importar Excel
                         </button>
-                        <button onclick="openModal('student')" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-100">
+                        <button onclick="openModal('student')" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all">
                             <i data-lucide="user-plus" class="w-5 h-5"></i> Nuevo
                         </button>
                     </div>
                 </div>
-
-                <div id="student-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- JS populate -->
-                </div>
+                <div id="student-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
             </section>
 
-            <!-- Reports Section -->
+            <!-- Reportes -->
             <section id="section-reports" class="hidden space-y-8">
-                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 no-print">
-                    <div class="flex items-center gap-4">
-                        <div class="bg-blue-600 p-3 rounded-xl">
-                            <i data-lucide="trending-up" class="w-6 h-6 text-white"></i>
-                        </div>
-                        <h2 class="text-xl font-bold text-slate-900">Reportes e IA</h2>
-                    </div>
-                    <div class="flex flex-wrap gap-3">
-                        <button onclick="window.print()" class="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white font-bold rounded-xl">
-                            <i data-lucide="printer" class="w-5 h-5"></i> Imprimir PDF
-                        </button>
-                        <button onclick="askGemini()" class="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700">
-                            <i data-lucide="sparkles" class="w-5 h-5"></i> Análisis IA
-                        </button>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                        <h3 class="font-bold mb-4">Asistencia por Grado</h3>
-                        <canvas id="gradeChart"></canvas>
-                    </div>
-                    <div id="ai-insights" class="bg-purple-50 p-6 rounded-2xl border border-purple-100 hidden">
-                        <h3 class="font-bold text-purple-900 flex items-center gap-2 mb-4">
-                            <i data-lucide="sparkles" class="w-5 h-5"></i> Recomendaciones de la IA
-                        </h3>
-                        <div id="ai-content" class="text-purple-800 text-sm leading-relaxed">
-                            Analizando datos...
-                        </div>
-                    </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <h3 class="font-bold mb-4">Asistencia por Grado</h3>
+                    <canvas id="gradeChart"></canvas>
                 </div>
             </section>
-
         </main>
     </div>
 
-    <!-- Modals -->
+    <!-- Modales -->
     <div id="modal-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
-        
-        <!-- Student Modal -->
         <div id="modal-student" class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 hidden">
             <h3 class="text-xl font-bold mb-6" id="modal-title">Nuevo Estudiante</h3>
             <form id="student-form" class="space-y-4">
                 <input type="hidden" id="edit-id">
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="col-span-2">
-                        <label class="text-xs font-bold text-slate-500 uppercase">Nombre Completo</label>
-                        <input type="text" id="s-name" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
-                    </div>
-                    <div>
-                        <label class="text-xs font-bold text-slate-500 uppercase">Grado</label>
-                        <input type="text" id="s-grade" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
-                    </div>
-                    <div>
-                        <label class="text-xs font-bold text-slate-500 uppercase">Teléfono</label>
-                        <input type="text" id="s-phone" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
-                    </div>
-                </div>
-                <div class="pt-4 flex gap-3">
+                <input type="text" id="s-name" placeholder="Nombre" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                <input type="text" id="s-grade" placeholder="Grado" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                <input type="text" id="s-phone" placeholder="Teléfono" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                <div class="flex gap-3">
                     <button type="button" onclick="closeModal()" class="flex-1 py-3 border border-slate-200 rounded-xl font-bold">Cancelar</button>
                     <button type="submit" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold">Guardar</button>
                 </div>
             </form>
         </div>
 
-        <!-- Import Modal -->
         <div id="modal-import" class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 hidden">
-            <h3 class="text-xl font-bold mb-4">Importar Estudiantes</h3>
-            <p class="text-sm text-slate-500 mb-6">Selecciona un archivo Excel (.xlsx) con las columnas: Nombre, Grado, Telefono.</p>
-            <input type="file" id="excel-file" accept=".xlsx" class="mb-6 block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+            <h3 class="text-xl font-bold mb-4">Importar Excel</h3>
+            <input type="file" id="excel-file" accept=".xlsx" class="mb-6 block w-full text-sm">
             <div class="flex gap-3">
                 <button onclick="closeModal()" class="flex-1 py-3 border border-slate-200 rounded-xl font-bold">Cerrar</button>
                 <button onclick="processExcel()" class="flex-1 py-3 bg-green-600 text-white rounded-xl font-bold">Procesar</button>
             </div>
         </div>
-
-        <!-- Excuse/Observation Modal -->
-        <div id="modal-note" class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 hidden">
-            <h3 class="text-xl font-bold mb-2" id="note-title">Nota</h3>
-            <p id="note-student" class="text-sm text-slate-500 mb-4"></p>
-            <textarea id="note-text" class="w-full h-32 p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none resize-none mb-6"></textarea>
-            <div class="flex gap-3">
-                <button onclick="closeModal()" class="flex-1 py-3 border border-slate-200 rounded-xl font-bold">Cancelar</button>
-                <button id="btn-save-note" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold">Guardar</button>
-            </div>
-        </div>
     </div>
 
     <script>
-        // --- Data Management ---
         let students = JSON.parse(localStorage.getItem('students')) || [];
         let attendance = JSON.parse(localStorage.getItem('attendance')) || {};
-        let observations = JSON.parse(localStorage.getItem('observations')) || [];
 
         const saveData = () => {
             localStorage.setItem('students', JSON.stringify(students));
             localStorage.setItem('attendance', JSON.stringify(attendance));
-            localStorage.setItem('observations', JSON.stringify(observations));
             updateGradesFilter();
             updateStudentCount();
         };
 
         function updateStudentCount() {
-            const countEl = document.getElementById('student-count');
-            if(countEl) countEl.innerText = `${students.length} registrados`;
+            document.getElementById('student-count').innerText = `${students.length} registrados`;
         }
 
-        // --- Navigation ---
         function switchTab(tab) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
             document.getElementById(`section-${tab}`).classList.remove('hidden');
-            
             document.querySelectorAll('nav button').forEach(b => b.classList.remove('tab-active'));
-            const activeBtn = document.getElementById(`tab-${tab}`);
-            if(activeBtn) activeBtn.classList.add('tab-active');
-
+            document.getElementById(`tab-${tab}`).classList.add('tab-active');
             if(tab === 'students') renderStudents();
             if(tab === 'attendance') renderAttendanceList();
             if(tab === 'reports') renderCharts();
         }
 
-        // --- Students Management ---
         function renderStudents() {
             const grid = document.getElementById('student-grid');
-            if(!grid) return;
-            
             if(students.length === 0) {
-                grid.innerHTML = `
-                    <div class="col-span-full py-20 text-center bg-white rounded-2xl border-2 border-dashed border-slate-200">
-                        <i data-lucide="users" class="w-12 h-12 text-slate-300 mx-auto mb-4"></i>
-                        <p class="text-slate-500 font-medium">No hay estudiantes registrados.</p>
-                        <p class="text-slate-400 text-sm">Importa un archivo Excel o agrega uno manualmente.</p>
-                    </div>
-                `;
+                grid.innerHTML = `<div class="col-span-full py-20 text-center text-slate-400">No hay estudiantes.</div>`;
             } else {
                 grid.innerHTML = students.map(s => `
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 group hover:shadow-md transition-all">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="font-bold text-slate-900">${s.name}</h3>
-                                <span class="text-xs font-bold bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">${s.grade}</span>
-                            </div>
-                            <div class="flex gap-1">
-                                <button onclick="editStudent('${s.id}')" class="p-2 text-slate-400 hover:text-blue-600 transition-colors" title="Editar"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
-                                <button onclick="deleteStudent('${s.id}')" class="p-2 text-slate-400 hover:text-red-600 transition-colors" title="Eliminar"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                            </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex justify-between items-center">
+                        <div>
+                            <h3 class="font-bold">${s.name}</h3>
+                            <span class="text-xs font-bold text-blue-600">${s.grade}</span>
                         </div>
-                        <div class="text-sm text-slate-500 flex items-center gap-2">
-                            <i data-lucide="phone" class="w-3 h-3"></i> ${s.phone || 'No registrado'}
+                        <div class="flex gap-2">
+                            <button onclick="editStudent('${s.id}')" class="text-slate-400 hover:text-blue-600"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                            <button onclick="deleteStudent('${s.id}')" class="text-slate-400 hover:text-red-600"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                         </div>
                     </div>
                 `).join('');
@@ -315,285 +175,101 @@
         }
 
         function clearAllStudents() {
-            if(students.length === 0) {
-                alert('No hay estudiantes para eliminar.');
-                return;
-            }
-            
-            const confirm1 = confirm('¿ESTÁS SEGURO? Esta acción eliminará a TODOS los estudiantes de la lista.');
-            if(confirm1) {
-                const confirm2 = confirm('¿Realmente quieres borrar todo el listado? Esta acción no se puede deshacer.');
-                if(confirm2) {
-                    students = [];
-                    // Opcional: También podrías querer limpiar la asistencia y observaciones si es un año nuevo
-                    // attendance = {};
-                    // observations = [];
-                    saveData();
-                    renderStudents();
-                    alert('Listado de estudiantes vaciado correctamente.');
-                }
+            if(confirm('¿BORRAR TODO EL LISTADO? Esta acción no se puede deshacer.')) {
+                students = [];
+                saveData();
+                renderStudents();
+                alert('Listado vaciado.');
             }
         }
 
         function deleteStudent(id) {
-            const student = students.find(s => s.id === id);
-            if(confirm(`¿Estás seguro de eliminar a ${student.name}?`)) {
+            if(confirm('¿Eliminar estudiante?')) {
                 students = students.filter(s => s.id !== id);
                 saveData();
                 renderStudents();
             }
         }
 
-        function editStudent(id) {
-            const s = students.find(x => x.id === id);
-            document.getElementById('edit-id').value = s.id;
-            document.getElementById('s-name').value = s.name;
-            document.getElementById('s-grade').value = s.grade;
-            document.getElementById('s-phone').value = s.phone;
-            openModal('student');
-            document.getElementById('modal-title').innerText = 'Editar Estudiante';
-        }
+        function processExcel() {
+            const fileInput = document.getElementById('excel-file');
+            const file = fileInput.files[0];
+            if(!file) return;
 
-        document.getElementById('student-form').onsubmit = (e) => {
-            e.preventDefault();
-            const id = document.getElementById('edit-id').value || Date.now().toString();
-            const student = {
-                id,
-                name: document.getElementById('s-name').value,
-                grade: document.getElementById('s-grade').value,
-                phone: document.getElementById('s-phone').value
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const data = e.target.result;
+                const workbook = XLSX.read(data, { type: 'binary' });
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                const json = XLSX.utils.sheet_to_json(sheet);
+
+                const newStudents = json.map(row => {
+                    // Función para buscar el valor sin importar mayúsculas, espacios o tildes
+                    const findValue = (keys) => {
+                        const foundKey = Object.keys(row).find(k => 
+                            keys.some(key => k.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === key)
+                        );
+                        return foundKey ? row[foundKey] : null;
+                    };
+
+                    return {
+                        id: Math.random().toString(36).substr(2, 9),
+                        name: findValue(['nombre', 'estudiante', 'name']) || "Sin Nombre",
+                        grade: findValue(['grado', 'curso', 'grade']) || "Sin Grado",
+                        phone: findValue(['telefono', 'celular', 'phone']) || ""
+                    };
+                });
+
+                students = students.concat(newStudents);
+                saveData();
+                closeModal();
+                renderStudents();
+                alert(`Se importaron ${newStudents.length} estudiantes.`);
             };
-
-            const index = students.findIndex(s => s.id === id);
-            if(index > -1) students[index] = student;
-            else students.push(student);
-
-            saveData();
-            closeModal();
-            renderStudents();
-        };
-
-        // --- Attendance Management ---
-        function loadAttendance() {
-            renderAttendanceList();
+            reader.readAsBinaryString(file);
         }
 
         function renderAttendanceList() {
             const date = document.getElementById('attendance-date').value;
             const gradeFilter = document.getElementById('filter-grade-attendance').value;
             const list = document.getElementById('attendance-list');
-            if(!list) return;
-            
             const filtered = students.filter(s => gradeFilter === 'all' || s.grade === gradeFilter);
             
-            if(filtered.length === 0) {
-                list.innerHTML = `<tr><td colspan="3" class="px-6 py-10 text-center text-slate-400 italic">No hay estudiantes para mostrar.</td></tr>`;
-            } else {
-                list.innerHTML = filtered.map(s => {
-                    const record = attendance[date]?.[s.id] || { status: 'pending' };
-                    return `
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="px-6 py-4">
-                                <div class="font-medium text-slate-900">${s.name}</div>
-                                <div class="text-xs text-slate-400">${s.grade}</div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="flex justify-center gap-2">
-                                    <button onclick="markAttendance('${s.id}', 'present')" class="p-2 rounded-lg transition-all ${record.status === 'present' ? 'bg-green-100 text-green-600 shadow-sm' : 'bg-slate-100 text-slate-400 hover:bg-green-50'}">
-                                        <i data-lucide="check-circle-2" class="w-6 h-6"></i>
-                                    </button>
-                                    <button onclick="markAttendance('${s.id}', 'absent')" class="p-2 rounded-lg transition-all ${record.status === 'absent' ? 'bg-red-100 text-red-600 shadow-sm' : 'bg-slate-100 text-slate-400 hover:bg-red-50'}">
-                                        <i data-lucide="x-circle" class="w-6 h-6"></i>
-                                    </button>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 text-right no-print">
-                                <div class="flex justify-end gap-2">
-                                    <button onclick="openNoteModal('${s.id}', 'excuse')" class="p-2 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-blue-50" title="Excusa"><i data-lucide="info" class="w-5 h-5"></i></button>
-                                    <button onclick="openNoteModal('${s.id}', 'observation')" class="p-2 text-slate-400 hover:text-amber-600 rounded-lg hover:bg-amber-50" title="Observación"><i data-lucide="message-square" class="w-5 h-5"></i></button>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
-            }
+            list.innerHTML = filtered.map(s => {
+                const record = attendance[date]?.[s.id] || { status: 'pending' };
+                return `
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-6 py-4">
+                            <div class="font-medium">${s.name}</div>
+                            <div class="text-xs text-slate-400">${s.grade}</div>
+                        </td>
+                        <td class="px-6 py-4 flex justify-center gap-2">
+                            <button onclick="markAttendance('${s.id}', 'present')" class="p-2 rounded-lg ${record.status === 'present' ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-400'}"><i data-lucide="check-circle-2" class="w-6 h-6"></i></button>
+                            <button onclick="markAttendance('${s.id}', 'absent')" class="p-2 rounded-lg ${record.status === 'absent' ? 'bg-red-100 text-red-600' : 'bg-slate-100 text-slate-400'}"><i data-lucide="x-circle" class="w-6 h-6"></i></button>
+                        </td>
+                        <td class="px-6 py-4 text-right no-print">
+                            <button class="p-2 text-slate-400"><i data-lucide="message-square" class="w-5 h-5"></i></button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
             lucide.createIcons();
         }
 
         function markAttendance(studentId, status) {
             const date = document.getElementById('attendance-date').value;
             if(!attendance[date]) attendance[date] = {};
-            attendance[date][studentId] = { ...attendance[date][studentId], status };
+            attendance[date][studentId] = { status };
             saveData();
             renderAttendanceList();
         }
 
-        // --- Notes & Observations ---
-        function openNoteModal(studentId, type) {
-            const student = students.find(s => s.id === studentId);
-            const date = document.getElementById('attendance-date').value;
-            
-            document.getElementById('note-title').innerText = type === 'excuse' ? 'Excusa / Razón' : 'Observación Diaria';
-            document.getElementById('note-student').innerText = student.name;
-            
-            let currentText = "";
-            if(type === 'excuse') {
-                currentText = attendance[date]?.[studentId]?.excuse || "";
-            } else {
-                const obs = observations.find(o => o.studentId === studentId && o.date === date);
-                currentText = obs ? obs.content : "";
-            }
-            
-            document.getElementById('note-text').value = currentText;
-            
-            document.getElementById('btn-save-note').onclick = () => {
-                const text = document.getElementById('note-text').value;
-                if(type === 'excuse') {
-                    if(!attendance[date]) attendance[date] = {};
-                    attendance[date][studentId] = { ...attendance[date][studentId], excuse: text };
-                } else {
-                    const idx = observations.findIndex(o => o.studentId === studentId && o.date === date);
-                    if(idx > -1) observations[idx].content = text;
-                    else observations.push({ studentId, date, content: text });
-                }
-                saveData();
-                closeModal();
-                renderAttendanceList();
-            };
-            
-            openModal('note');
-        }
-
-        // --- Excel Processing ---
-        function processExcel() {
-            const fileInput = document.getElementById('excel-file');
-            const file = fileInput.files[0];
-            if(!file) {
-                alert('Por favor selecciona un archivo.');
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const data = e.target.result;
-                    const workbook = XLSX.read(data, { type: 'binary' });
-                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const json = XLSX.utils.sheet_to_json(sheet);
-
-                    if(json.length === 0) {
-                        alert('El archivo parece estar vacío.');
-                        return;
-                    }
-
-                    json.forEach(row => {
-                        students.push({
-                            id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-                            name: row.Nombre || row.nombre || row.NAME || "Sin Nombre",
-                            grade: row.Grado || row.grado || row.GRADE || "Sin Grado",
-                            phone: row.Telefono || row.telefono || row.PHONE || ""
-                        });
-                    });
-
-                    saveData();
-                    closeModal();
-                    renderStudents();
-                    fileInput.value = '';
-                    alert(`¡Éxito! Se han importado ${json.length} estudiantes.`);
-                } catch (err) {
-                    alert('Error al procesar el archivo Excel. Asegúrate de que el formato sea correcto.');
-                    console.error(err);
-                }
-            };
-            reader.readAsBinaryString(file);
-        }
-
-        // --- Charts & Reports ---
-        let myChart = null;
-        function renderCharts() {
-            const canvas = document.getElementById('gradeChart');
-            if(!canvas) return;
-            const ctx = canvas.getContext('2d');
-            if(myChart) myChart.destroy();
-
+        function updateGradesFilter() {
+            const filter = document.getElementById('filter-grade-attendance');
             const grades = [...new Set(students.map(s => s.grade))].sort();
-            const data = grades.map(g => {
-                return students.filter(s => s.grade === g).length;
-            });
-
-            myChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: grades,
-                    datasets: [{
-                        label: 'Estudiantes por Grado',
-                        data: data,
-                        backgroundColor: '#3b82f6',
-                        borderRadius: 8,
-                        hoverBackgroundColor: '#2563eb'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: { 
-                        legend: { display: false },
-                        tooltip: { backgroundColor: '#1e293b', padding: 12, borderRadius: 8 }
-                    },
-                    scales: {
-                        y: { beginAtZero: true, grid: { display: false } },
-                        x: { grid: { display: false } }
-                    }
-                }
-            });
+            filter.innerHTML = '<option value="all">Todos los grados</option>' + grades.map(g => `<option value="${g}">${g}</option>`).join('');
         }
 
-        // --- Gemini AI ---
-        async function askGemini() {
-            const insightsBox = document.getElementById('ai-insights');
-            const content = document.getElementById('ai-content');
-            insightsBox.classList.remove('hidden');
-            content.innerText = "Analizando patrones de asistencia y comportamiento...";
-
-            const summary = {
-                totalStudents: students.length,
-                totalObservations: observations.length,
-                attendanceDays: Object.keys(attendance).length
-            };
-
-            const apiKey = localStorage.getItem('GEMINI_API_KEY');
-            if(!apiKey) {
-                const key = prompt("Por favor, ingresa tu GEMINI_API_KEY para obtener análisis de IA:");
-                if(key) localStorage.setItem('GEMINI_API_KEY', key);
-                else {
-                    content.innerText = "Se requiere una API Key para el análisis.";
-                    return;
-                }
-            }
-
-            try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${localStorage.getItem('GEMINI_API_KEY')}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [{
-                                text: `Actúa como un experto director escolar. Analiza estos datos: ${JSON.stringify(summary)}. 
-                                Dame 3 consejos breves para mejorar la asistencia y el clima escolar basándote en estos números. 
-                                Responde en español de forma motivadora y profesional.`
-                            }]
-                        }]
-                    })
-                });
-
-                const data = await response.json();
-                content.innerText = data.candidates[0].content.parts[0].text;
-            } catch (error) {
-                content.innerText = "Error al conectar con la IA. Verifica tu conexión y API Key.";
-            }
-        }
-
-        // --- UI Helpers ---
         function openModal(type) {
             document.getElementById('modal-overlay').classList.remove('hidden');
             document.getElementById(`modal-${type}`).classList.remove('hidden');
@@ -602,35 +278,11 @@
         function closeModal() {
             document.getElementById('modal-overlay').classList.add('hidden');
             document.querySelectorAll('#modal-overlay > div').forEach(d => d.classList.add('hidden'));
-            document.getElementById('student-form').reset();
-            document.getElementById('edit-id').value = '';
-            document.getElementById('modal-title').innerText = 'Nuevo Estudiante';
         }
 
-        function updateGradesFilter() {
-            const filter = document.getElementById('filter-grade-attendance');
-            if(!filter) return;
-            const grades = [...new Set(students.map(s => s.grade))].sort();
-            filter.innerHTML = '<option value="all">Todos los grados</option>' + 
-                grades.map(g => `<option value="${g}">${g}</option>`).join('');
-        }
-
-        function exportData() {
-            const data = { students, attendance, observations };
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `asistencia_backup_${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-        }
-
-        // --- App Init ---
         window.onload = () => {
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('attendance-date').value = today;
+            document.getElementById('attendance-date').value = new Date().toISOString().split('T')[0];
             updateGradesFilter();
-            updateStudentCount();
             switchTab('attendance');
             lucide.createIcons();
         };
