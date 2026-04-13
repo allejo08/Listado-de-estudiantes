@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asistencia Escolar Pro</title>
+    <title>Asistencia y Diario de Clase Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
@@ -33,7 +33,7 @@
                         <div class="bg-blue-600 p-2.5 rounded-xl shadow-lg shadow-blue-100">
                             <i data-lucide="graduation-cap" class="w-7 h-7 text-white"></i>
                         </div>
-                        <span class="text-2xl font-extrabold text-slate-900 tracking-tight">Asistencia Pro</span>
+                        <span class="text-2xl font-extrabold text-slate-900 tracking-tight">Diario Escolar</span>
                     </div>
                     
                     <nav class="flex h-full items-center gap-2">
@@ -69,10 +69,15 @@
                         <div class="bg-blue-50 p-4 rounded-2xl"><i data-lucide="calendar" class="w-8 h-8 text-blue-600"></i></div>
                         <div>
                             <h2 class="text-2xl font-black text-slate-900">Llamado a Lista</h2>
-                            <input type="date" id="attendance-date" onchange="renderAttendanceList()" class="text-slate-500 font-bold bg-transparent border-none focus:ring-0 cursor-pointer">
+                            <input type="date" id="attendance-date" onchange="validateWeekday(this); renderAttendanceList()" class="text-slate-500 font-bold bg-transparent border-none focus:ring-0 cursor-pointer">
                         </div>
                     </div>
-                    <select id="filter-grade-attendance" onchange="renderAttendanceList()" class="px-6 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none"></select>
+                    <div class="flex items-center gap-3">
+                        <button id="btn-daily-activity" onclick="openActivityModal()" class="hidden px-6 py-3 bg-amber-50 text-amber-600 font-bold rounded-2xl hover:bg-amber-100 transition-all border border-amber-100 flex items-center gap-2">
+                            <i data-lucide="book-open" class="w-5 h-5"></i> 📓 Bitácora de Clase
+                        </button>
+                        <select id="filter-grade-attendance" onchange="renderAttendanceList()" class="px-6 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none"></select>
+                    </div>
                 </div>
                 <div class="bg-white rounded-[2rem] card-shadow border border-slate-100 overflow-hidden">
                     <table class="w-full text-left">
@@ -115,23 +120,22 @@
                 <div id="student-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
             </section>
 
-            <!-- SECCIÓN REPORTES (TABLERO AVANZADO) -->
+            <!-- SECCIÓN REPORTES -->
             <section id="section-reports" class="hidden space-y-8">
-                <!-- Header Reportes -->
                 <div class="bg-white p-8 rounded-[2rem] card-shadow border border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                     <div class="flex items-center gap-5">
                         <div class="bg-blue-600 p-4 rounded-2xl shadow-lg shadow-blue-100"><i data-lucide="trending-up" class="w-8 h-8 text-white"></i></div>
                         <div>
                             <h2 class="text-2xl font-black text-slate-900">Tablero de Reportes</h2>
-                            <p class="text-slate-500 font-medium">Análisis interactivo con rango de fechas</p>
+                            <p class="text-slate-500 font-medium">Análisis interactivo (Lunes a Viernes)</p>
                         </div>
                     </div>
                     <div class="flex flex-wrap items-center gap-3 no-print">
                         <button onclick="window.print()" class="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white font-bold rounded-2xl hover:bg-slate-800 transition-all"><i data-lucide="printer" class="w-5 h-5"></i> Imprimir</button>
                         <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-2xl border border-slate-100">
-                            <input type="date" id="report-start-date" onchange="updateReportData()" class="bg-transparent text-xs font-bold outline-none">
+                            <input type="date" id="report-start-date" onchange="validateWeekday(this); updateReportData()" class="bg-transparent text-xs font-bold outline-none">
                             <span class="text-slate-300">|</span>
-                            <input type="date" id="report-end-date" onchange="updateReportData()" class="bg-transparent text-xs font-bold outline-none">
+                            <input type="date" id="report-end-date" onchange="validateWeekday(this); updateReportData()" class="bg-transparent text-xs font-bold outline-none">
                         </div>
                         <select id="report-filter-grade" onchange="updateReportData()" class="px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none"></select>
                         <select id="report-filter-student" onchange="updateReportData()" class="px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none">
@@ -140,11 +144,10 @@
                     </div>
                 </div>
 
-                <!-- Tarjetas de Resumen -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div class="bg-white p-6 rounded-[2rem] card-shadow border border-slate-100 flex items-center gap-4">
                         <div class="bg-blue-50 p-3 rounded-2xl"><i data-lucide="calendar" class="w-6 h-6 text-blue-600"></i></div>
-                        <div><p class="text-xs font-black text-slate-400 uppercase tracking-widest">Total Días</p><h4 id="stat-total" class="text-2xl font-black text-slate-900">0</h4></div>
+                        <div><p class="text-xs font-black text-slate-400 uppercase tracking-widest">Días Laborales</p><h4 id="stat-total" class="text-2xl font-black text-slate-900">0</h4></div>
                     </div>
                     <div class="bg-white p-6 rounded-[2rem] card-shadow border border-slate-100 flex items-center gap-4">
                         <div class="bg-green-50 p-3 rounded-2xl"><i data-lucide="check-circle" class="w-6 h-6 text-green-600"></i></div>
@@ -161,20 +164,25 @@
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <!-- Gráfica -->
-                    <div class="lg:col-span-2 bg-white p-8 rounded-[2rem] card-shadow border border-slate-100">
-                        <h3 class="text-xl font-black text-slate-900 mb-6">Tendencia de Asistencia</h3>
-                        <div class="h-[400px]"><canvas id="gradeChart"></canvas></div>
+                    <div class="lg:col-span-2 space-y-8">
+                        <div class="bg-white p-8 rounded-[2rem] card-shadow border border-slate-100">
+                            <h3 class="text-xl font-black text-slate-900 mb-6">Tendencia de Asistencia</h3>
+                            <div class="h-[300px]"><canvas id="gradeChart"></canvas></div>
+                        </div>
+                        <!-- Bitácora de Actividades del Grupo -->
+                        <div id="group-activities-log" class="bg-white p-8 rounded-[2rem] card-shadow border border-slate-100 hidden">
+                            <h3 class="text-xl font-black text-slate-900 mb-6 flex items-center gap-2">
+                                <i data-lucide="book" class="w-5 h-5 text-blue-500"></i> Bitácora de Actividades del Grupo
+                            </h3>
+                            <div id="activities-list" class="space-y-4"></div>
+                        </div>
                     </div>
                     
-                    <!-- Bitácora de Observaciones -->
                     <div class="bg-white p-8 rounded-[2rem] card-shadow border border-slate-100">
                         <h3 class="text-xl font-black text-slate-900 mb-6 flex items-center gap-2">
-                            <i data-lucide="message-square" class="w-5 h-5 text-amber-500"></i> Bitácora
+                            <i data-lucide="message-square" class="w-5 h-5 text-amber-500"></i> Observaciones Indiv.
                         </h3>
-                        <div id="observations-history" class="space-y-4 max-h-[400px] overflow-y-auto pr-2">
-                            <p class="text-slate-400 italic text-sm">Selecciona un estudiante para ver sus observaciones.</p>
-                        </div>
+                        <div id="observations-history" class="space-y-4 max-h-[600px] overflow-y-auto pr-2"></div>
                     </div>
                 </div>
             </section>
@@ -183,8 +191,21 @@
 
     <!-- Modales -->
     <div id="modal-overlay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
+        
+        <!-- Modal Actividad Diaria -->
+        <div id="modal-activity" class="bg-white rounded-[2.5rem] shadow-2xl max-w-lg w-full p-10 hidden">
+            <h3 class="text-2xl font-black text-slate-900 mb-2">Actividades del Día</h3>
+            <p id="activity-grade-name" class="text-amber-600 font-bold mb-6"></p>
+            <textarea id="activity-text" placeholder="Temas, ejercicios, prácticas o eventos realizados hoy con este grupo..." class="w-full h-60 p-6 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-amber-500 transition-all resize-none mb-6"></textarea>
+            <div class="flex gap-4">
+                <button onclick="closeModal()" class="flex-1 py-4 font-bold text-slate-500">Cancelar</button>
+                <button id="btn-save-activity" class="flex-1 py-4 bg-amber-600 text-white font-bold rounded-2xl shadow-lg shadow-amber-100 hover:bg-amber-700 transition-all">Guardar Bitácora</button>
+            </div>
+        </div>
+
+        <!-- Modal Comentario Estudiante -->
         <div id="modal-note" class="bg-white rounded-[2.5rem] shadow-2xl max-w-md w-full p-10 hidden">
-            <h3 class="text-2xl font-black text-slate-900 mb-2">Observación</h3>
+            <h3 class="text-2xl font-black text-slate-900 mb-2">Observación Estudiante</h3>
             <p id="note-student-name" class="text-blue-600 font-bold mb-6"></p>
             <textarea id="note-text" class="w-full h-40 p-6 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 transition-all resize-none mb-6"></textarea>
             <div class="flex gap-4">
@@ -193,6 +214,7 @@
             </div>
         </div>
 
+        <!-- Modales Sistema -->
         <div id="modal-backup" class="bg-white rounded-[2.5rem] shadow-2xl max-w-md w-full p-10 hidden">
             <h3 class="text-2xl font-black text-slate-900 mb-4">Restaurar Copia</h3>
             <input type="file" id="backup-file" accept=".json" class="mb-8 block w-full text-sm">
@@ -229,12 +251,27 @@
     <script>
         let students = JSON.parse(localStorage.getItem('students')) || [];
         let attendance = JSON.parse(localStorage.getItem('attendance')) || {};
+        let activities = JSON.parse(localStorage.getItem('activities')) || {};
 
         const saveData = () => {
             localStorage.setItem('students', JSON.stringify(students));
             localStorage.setItem('attendance', JSON.stringify(attendance));
+            localStorage.setItem('activities', JSON.stringify(activities));
             document.getElementById('student-count').innerText = `${students.length} registrados`;
         };
+
+        // --- VALIDACIÓN DE FIN DE SEMANA ---
+        function validateWeekday(input) {
+            const date = new Date(input.value + 'T12:00:00');
+            const day = date.getDay(); // 0: Dom, 6: Sab
+            if (day === 0 || day === 6) {
+                alert('La aplicación solo permite registros de Lunes a Viernes.');
+                // Ajustar al viernes anterior o lunes siguiente
+                if (day === 0) date.setDate(date.getDate() - 2); // Domingo -> Viernes
+                else date.setDate(date.getDate() - 1); // Sábado -> Viernes
+                input.value = date.toISOString().split('T')[0];
+            }
+        }
 
         function switchTab(tab) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
@@ -247,7 +284,7 @@
             if(tab === 'reports') updateReportData();
         }
 
-        // --- ASISTENCIA ---
+        // --- ASISTENCIA Y BITÁCORA ---
         function markAttendance(studentId, status) {
             const date = document.getElementById('attendance-date').value;
             if(!attendance[date]) attendance[date] = {};
@@ -266,6 +303,24 @@
             filtered.forEach(s => attendance[date][s.id] = { ...attendance[date][s.id], status: status });
             saveData();
             renderAttendanceList();
+        }
+
+        function openActivityModal() {
+            const date = document.getElementById('attendance-date').value;
+            const grade = document.getElementById('filter-grade-attendance').value;
+            if(grade === 'all') return;
+            
+            document.getElementById('activity-grade-name').innerText = `Grado: ${grade}`;
+            document.getElementById('activity-text').value = activities[date]?.[grade] || '';
+            
+            document.getElementById('btn-save-activity').onclick = () => {
+                if(!activities[date]) activities[date] = {};
+                activities[date][grade] = document.getElementById('activity-text').value;
+                saveData();
+                closeModal();
+                renderAttendanceList();
+            };
+            openModal('activity');
         }
 
         function openNoteModal(studentId) {
@@ -287,6 +342,11 @@
             const date = document.getElementById('attendance-date').value;
             const gradeFilter = document.getElementById('filter-grade-attendance').value;
             const list = document.getElementById('attendance-list');
+            const btnActivity = document.getElementById('btn-daily-activity');
+            
+            if(gradeFilter !== 'all') btnActivity.classList.remove('hidden');
+            else btnActivity.classList.add('hidden');
+
             const filtered = students.filter(s => gradeFilter === 'all' || s.grade === gradeFilter);
             list.innerHTML = filtered.map(s => {
                 const record = attendance[date]?.[s.id] || { status: 'pending' };
@@ -321,7 +381,6 @@
             const gradeFilter = document.getElementById('report-filter-grade').value;
             const studentFilter = document.getElementById('report-filter-student').value;
             
-            // Actualizar lista de estudiantes
             const studentSelect = document.getElementById('report-filter-student');
             const filteredStudents = students.filter(s => gradeFilter === 'all' || s.grade === gradeFilter);
             let studentOptions = '<option value="all">Todos los estudiantes</option>';
@@ -331,14 +390,25 @@
                 studentSelect.setAttribute('data-grade', gradeFilter);
             }
 
-            // Filtrar Fechas
             const datesInRange = Object.keys(attendance).filter(d => (!start || d >= start) && (!end || d <= end)).sort();
 
             let total = 0, present = 0, absent = 0;
             const obsHistory = document.getElementById('observations-history');
-            let obsHtml = '';
+            const activitiesLog = document.getElementById('group-activities-log');
+            const activitiesList = document.getElementById('activities-list');
+            let obsHtml = '', actHtml = '';
 
             datesInRange.forEach(date => {
+                // Actividades del grupo
+                if(gradeFilter !== 'all' && activities[date]?.[gradeFilter]) {
+                    actHtml += `
+                        <div class="p-6 bg-blue-50 rounded-3xl border border-blue-100">
+                            <p class="text-[10px] font-black text-blue-600 uppercase mb-2">${date}</p>
+                            <p class="text-slate-700 font-medium whitespace-pre-wrap">${activities[date][gradeFilter]}</p>
+                        </div>
+                    `;
+                }
+
                 Object.keys(attendance[date]).forEach(sId => {
                     const s = students.find(x => x.id === sId);
                     if (!s) return;
@@ -346,15 +416,8 @@
                         const record = attendance[date][sId];
                         if (record.status === 'present') { total++; present++; }
                         if (record.status === 'absent') { total++; absent++; }
-                        
-                        // Recopilar observaciones si hay un estudiante seleccionado
                         if (studentFilter !== 'all' && record.note && record.note.trim() !== '') {
-                            obsHtml += `
-                                <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                                    <p class="text-[10px] font-black text-blue-500 uppercase mb-1">${date}</p>
-                                    <p class="text-sm text-slate-700 font-medium">${record.note}</p>
-                                </div>
-                            `;
+                            obsHtml += `<div class="p-4 bg-slate-50 rounded-2xl border border-slate-100"><p class="text-[10px] font-black text-blue-500 uppercase mb-1">${date}</p><p class="text-sm text-slate-700 font-medium">${record.note}</p></div>`;
                         }
                     }
                 });
@@ -365,7 +428,14 @@
             document.getElementById('stat-absent').innerText = absent;
             document.getElementById('stat-rate').innerText = total > 0 ? ((present / total) * 100).toFixed(1) + '%' : '0%';
             
-            obsHistory.innerHTML = obsHtml || (studentFilter === 'all' ? '<p class="text-slate-400 italic text-sm">Selecciona un estudiante para ver sus observaciones.</p>' : '<p class="text-slate-400 italic text-sm">No hay observaciones en este periodo.</p>');
+            obsHistory.innerHTML = obsHtml || (studentFilter === 'all' ? '<p class="text-slate-400 italic text-sm">Selecciona un estudiante para ver sus observaciones.</p>' : '<p class="text-slate-400 italic text-sm">No hay observaciones.</p>');
+            
+            if(gradeFilter !== 'all' && actHtml !== '') {
+                activitiesLog.classList.remove('hidden');
+                activitiesList.innerHTML = actHtml;
+            } else {
+                activitiesLog.classList.add('hidden');
+            }
 
             renderReportChart(datesInRange, gradeFilter, studentFilter);
         }
@@ -374,7 +444,6 @@
             const ctx = document.getElementById('gradeChart').getContext('2d');
             if(myChart) myChart.destroy();
             let labels = [], dataPresent = [], dataAbsent = [];
-
             if (studentFilter !== 'all') {
                 labels = dates;
                 labels.forEach(date => {
@@ -402,13 +471,7 @@
             }
             myChart = new Chart(ctx, {
                 type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        { label: 'Asistencias', data: dataPresent, backgroundColor: '#22c55e', borderRadius: 8 },
-                        { label: 'Inasistencias', data: dataAbsent, backgroundColor: '#ef4444', borderRadius: 8 }
-                    ]
-                },
+                data: { labels: labels, datasets: [{ label: 'Asistencias', data: dataPresent, backgroundColor: '#22c55e', borderRadius: 8 }, { label: 'Inasistencias', data: dataAbsent, backgroundColor: '#ef4444', borderRadius: 8 }] },
                 options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
             });
         }
@@ -452,12 +515,12 @@
         }
 
         function exportBackup() {
-            const data = { students, attendance };
+            const data = { students, attendance, activities };
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `backup_asistencia.json`;
+            a.download = `backup_diario_escolar.json`;
             a.click();
         }
 
@@ -470,6 +533,7 @@
                 const data = JSON.parse(e.target.result);
                 students = data.students;
                 attendance = data.attendance;
+                activities = data.activities || {};
                 saveData();
                 refreshFilters();
                 closeModal();
@@ -496,10 +560,13 @@
         function closeModal() { document.getElementById('modal-overlay').classList.add('hidden'); document.querySelectorAll('#modal-overlay > div').forEach(d => d.classList.add('hidden')); }
 
         window.onload = () => {
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('attendance-date').value = today;
-            document.getElementById('report-start-date').value = today;
-            document.getElementById('report-end-date').value = today;
+            const today = new Date();
+            if(today.getDay() === 0) today.setDate(today.getDate() - 2);
+            if(today.getDay() === 6) today.setDate(today.getDate() - 1);
+            const dateStr = today.toISOString().split('T')[0];
+            document.getElementById('attendance-date').value = dateStr;
+            document.getElementById('report-start-date').value = dateStr;
+            document.getElementById('report-end-date').value = dateStr;
             refreshFilters();
             switchTab('attendance');
             lucide.createIcons();
