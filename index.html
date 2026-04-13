@@ -11,7 +11,12 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-        @media print { .no-print { display: none !important; } .print-only { display: block !important; } }
+        @media print { 
+            .no-print { display: none !important; } 
+            .print-only { display: block !important; }
+            body { background-color: white; }
+            .card-shadow { border: 1px solid #e2e8f0; box-shadow: none; }
+        }
         .print-only { display: none; }
         .tab-active { background-color: #eff6ff; color: #2563eb; }
         .card-shadow { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02); }
@@ -102,10 +107,65 @@
                 <div id="student-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
             </section>
 
-            <!-- SECCIÓN REPORTES -->
+            <!-- SECCIÓN REPORTES (TABLERO PROFESIONAL) -->
             <section id="section-reports" class="hidden space-y-8">
+                <!-- Header Reportes -->
+                <div class="bg-white p-8 rounded-[2rem] card-shadow border border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                    <div class="flex items-center gap-5">
+                        <div class="bg-blue-600 p-4 rounded-2xl shadow-lg shadow-blue-100">
+                            <i data-lucide="trending-up" class="w-8 h-8 text-white"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-black text-slate-900">Tablero de Reportes</h2>
+                            <p class="text-slate-500 font-medium">Análisis interactivo de asistencia</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-3 no-print">
+                        <button onclick="window.print()" class="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white font-bold rounded-2xl hover:bg-slate-800 transition-all">
+                            <i data-lucide="printer" class="w-5 h-5"></i> PDF / Imprimir
+                        </button>
+                        <select id="report-filter-grade" onchange="updateReportData()" class="px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none"></select>
+                        <select id="report-filter-student" onchange="updateReportData()" class="px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none">
+                            <option value="all">Todos los estudiantes</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Tarjetas de Resumen -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-white p-6 rounded-[2rem] card-shadow border border-slate-100 flex items-center gap-4">
+                        <div class="bg-blue-50 p-3 rounded-2xl"><i data-lucide="calendar" class="w-6 h-6 text-blue-600"></i></div>
+                        <div>
+                            <p class="text-xs font-black text-slate-400 uppercase tracking-widest">Total Registros</p>
+                            <h4 id="stat-total" class="text-2xl font-black text-slate-900">0</h4>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-[2rem] card-shadow border border-slate-100 flex items-center gap-4">
+                        <div class="bg-green-50 p-3 rounded-2xl"><i data-lucide="check-circle" class="w-6 h-6 text-green-600"></i></div>
+                        <div>
+                            <p class="text-xs font-black text-slate-400 uppercase tracking-widest">Asistencias</p>
+                            <h4 id="stat-present" class="text-2xl font-black text-slate-900">0</h4>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-[2rem] card-shadow border border-slate-100 flex items-center gap-4">
+                        <div class="bg-red-50 p-3 rounded-2xl"><i data-lucide="alert-circle" class="w-6 h-6 text-red-600"></i></div>
+                        <div>
+                            <p class="text-xs font-black text-slate-400 uppercase tracking-widest">Inasistencias</p>
+                            <h4 id="stat-absent" class="text-2xl font-black text-slate-900">0</h4>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-[2rem] card-shadow border border-slate-100 flex items-center gap-4">
+                        <div class="bg-amber-50 p-3 rounded-2xl"><i data-lucide="activity" class="w-6 h-6 text-amber-600"></i></div>
+                        <div>
+                            <p class="text-xs font-black text-slate-400 uppercase tracking-widest">Tasa Asistencia</p>
+                            <h4 id="stat-rate" class="text-2xl font-black text-slate-900">0%</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráfica -->
                 <div class="bg-white p-8 rounded-[2rem] card-shadow border border-slate-100">
-                    <h3 class="text-xl font-black text-slate-900 mb-6">Asistencia por Grado</h3>
+                    <h3 class="text-xl font-black text-slate-900 mb-6">Visualización de Datos</h3>
                     <div class="h-[400px]"><canvas id="gradeChart"></canvas></div>
                 </div>
             </section>
@@ -114,19 +174,16 @@
 
     <!-- Modales -->
     <div id="modal-overlay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
-        
-        <!-- Modal Comentario -->
         <div id="modal-note" class="bg-white rounded-[2.5rem] shadow-2xl max-w-md w-full p-10 hidden">
             <h3 class="text-2xl font-black text-slate-900 mb-2">Observación</h3>
             <p id="note-student-name" class="text-blue-600 font-bold mb-6"></p>
-            <textarea id="note-text" placeholder="Escribe aquí una observación o excusa..." class="w-full h-40 p-6 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 transition-all resize-none mb-6"></textarea>
+            <textarea id="note-text" class="w-full h-40 p-6 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 transition-all resize-none mb-6"></textarea>
             <div class="flex gap-4">
                 <button onclick="closeModal()" class="flex-1 py-4 font-bold text-slate-500">Cancelar</button>
-                <button id="btn-save-note" class="flex-1 py-4 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all">Guardar Nota</button>
+                <button id="btn-save-note" class="flex-1 py-4 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all">Guardar</button>
             </div>
         </div>
 
-        <!-- Otros Modales (Backup, Import, Student) -->
         <div id="modal-backup" class="bg-white rounded-[2.5rem] shadow-2xl max-w-md w-full p-10 hidden">
             <h3 class="text-2xl font-black text-slate-900 mb-4">Restaurar Copia</h3>
             <input type="file" id="backup-file" accept=".json" class="mb-8 block w-full text-sm">
@@ -178,7 +235,7 @@
             activeBtn.classList.add('tab-active', 'bg-blue-50', 'text-blue-600');
             if(tab === 'students') renderStudents();
             if(tab === 'attendance') renderAttendanceList();
-            if(tab === 'reports') renderCharts();
+            if(tab === 'reports') updateReportData();
         }
 
         // --- ASISTENCIA ---
@@ -196,7 +253,6 @@
             const student = students.find(s => s.id === studentId);
             document.getElementById('note-student-name').innerText = student.name;
             document.getElementById('note-text').value = attendance[date]?.[studentId]?.note || '';
-            
             document.getElementById('btn-save-note').onclick = () => {
                 if(!attendance[date]) attendance[date] = {};
                 attendance[date][studentId] = { ...attendance[date][studentId], note: document.getElementById('note-text').value };
@@ -212,7 +268,6 @@
             const gradeFilter = document.getElementById('filter-grade-attendance').value;
             const list = document.getElementById('attendance-list');
             const filtered = students.filter(s => gradeFilter === 'all' || s.grade === gradeFilter);
-            
             list.innerHTML = filtered.map(s => {
                 const record = attendance[date]?.[s.id] || { status: 'pending' };
                 const hasNote = record.note && record.note.trim() !== '';
@@ -236,6 +291,94 @@
                 `;
             }).join('');
             lucide.createIcons();
+        }
+
+        // --- REPORTES AVANZADOS ---
+        let myChart = null;
+        function updateReportData() {
+            const gradeFilter = document.getElementById('report-filter-grade').value;
+            const studentFilter = document.getElementById('report-filter-student').value;
+            
+            // Actualizar lista de estudiantes en el filtro según el grado
+            const studentSelect = document.getElementById('report-filter-student');
+            const filteredStudents = students.filter(s => gradeFilter === 'all' || s.grade === gradeFilter);
+            let studentOptions = '<option value="all">Todos los estudiantes</option>';
+            filteredStudents.forEach(s => studentOptions += `<option value="${s.id}">${s.name}</option>`);
+            
+            // Solo actualizar el HTML si cambió la lista (para no perder selección)
+            if (studentSelect.getAttribute('data-grade') !== gradeFilter) {
+                studentSelect.innerHTML = studentOptions;
+                studentSelect.setAttribute('data-grade', gradeFilter);
+            }
+
+            // Calcular Estadísticas
+            let total = 0, present = 0, absent = 0;
+            Object.keys(attendance).forEach(date => {
+                Object.keys(attendance[date]).forEach(sId => {
+                    const s = students.find(x => x.id === sId);
+                    if (!s) return;
+                    if ((gradeFilter === 'all' || s.grade === gradeFilter) && (studentFilter === 'all' || s.id === studentFilter)) {
+                        const status = attendance[date][sId].status;
+                        if (status === 'present') { total++; present++; }
+                        if (status === 'absent') { total++; absent++; }
+                    }
+                });
+            });
+
+            document.getElementById('stat-total').innerText = total;
+            document.getElementById('stat-present').innerText = present;
+            document.getElementById('stat-absent').innerText = absent;
+            document.getElementById('stat-rate').innerText = total > 0 ? ((present / total) * 100).toFixed(1) + '%' : '0%';
+
+            renderReportChart(gradeFilter, studentFilter);
+        }
+
+        function renderReportChart(gradeFilter, studentFilter) {
+            const ctx = document.getElementById('gradeChart').getContext('2d');
+            if(myChart) myChart.destroy();
+
+            let labels = [], dataPresent = [], dataAbsent = [];
+
+            if (studentFilter !== 'all') {
+                // Si hay un estudiante, mostrar por fecha
+                labels = Object.keys(attendance).sort();
+                labels.forEach(date => {
+                    const status = attendance[date][studentFilter]?.status;
+                    dataPresent.push(status === 'present' ? 1 : 0);
+                    dataAbsent.push(status === 'absent' ? 1 : 0);
+                });
+            } else {
+                // Si no, mostrar por grado
+                labels = [...new Set(students.map(s => s.grade))].sort();
+                if (gradeFilter !== 'all') labels = [gradeFilter];
+                
+                labels.forEach(g => {
+                    let gP = 0, gA = 0;
+                    Object.keys(attendance).forEach(date => {
+                        Object.keys(attendance[date]).forEach(sId => {
+                            const s = students.find(x => x.id === sId);
+                            if (s && s.grade === g) {
+                                if (attendance[date][sId].status === 'present') gP++;
+                                if (attendance[date][sId].status === 'absent') gA++;
+                            }
+                        });
+                    });
+                    dataPresent.push(gP);
+                    dataAbsent.push(gA);
+                });
+            }
+
+            myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Asistencias', data: dataPresent, backgroundColor: '#22c55e', borderRadius: 8 },
+                        { label: 'Inasistencias', data: dataAbsent, backgroundColor: '#ef4444', borderRadius: 8 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+            });
         }
 
         // --- GESTIÓN ESTUDIANTES ---
@@ -276,21 +419,6 @@
             reader.readAsBinaryString(file);
         }
 
-        // --- REPORTES ---
-        let myChart = null;
-        function renderCharts() {
-            const ctx = document.getElementById('gradeChart').getContext('2d');
-            if(myChart) myChart.destroy();
-            const grades = [...new Set(students.map(s => s.grade))].sort();
-            const data = grades.map(g => students.filter(s => s.grade === g).length);
-            myChart = new Chart(ctx, {
-                type: 'bar',
-                data: { labels: grades, datasets: [{ label: 'Estudiantes', data: data, backgroundColor: '#3b82f6', borderRadius: 12 }] },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } } }
-            });
-        }
-
-        // --- BACKUP ---
         function exportBackup() {
             const data = { students, attendance };
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -320,10 +448,14 @@
 
         function refreshFilters() {
             const grades = [...new Set(students.map(s => s.grade))].sort();
-            const filter = document.getElementById('filter-grade-attendance');
-            const currentVal = filter.value;
-            filter.innerHTML = '<option value="all">Todos los grados</option>' + grades.map(g => `<option value="${g}">${g}</option>`).join('');
-            if (grades.includes(currentVal)) filter.value = currentVal;
+            ['filter-grade-attendance', 'report-filter-grade'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) {
+                    const currentVal = el.value;
+                    el.innerHTML = '<option value="all">Todos los grados</option>' + grades.map(g => `<option value="${g}">${g}</option>`).join('');
+                    if (grades.includes(currentVal)) el.value = currentVal;
+                }
+            });
         }
 
         function clearAllStudents() { if(confirm('¿Borrar todo?')) { students = []; saveData(); refreshFilters(); renderStudents(); } }
