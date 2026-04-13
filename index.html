@@ -119,7 +119,7 @@
                             </tr>
                         </thead>
                         <tbody id="attendance-list" class="divide-y divide-slate-100">
-                            <!-- JS will populate -->
+                            <!-- JS populate -->
                         </tbody>
                     </table>
                 </div>
@@ -132,20 +132,26 @@
                         <div class="bg-blue-50 p-3 rounded-xl">
                             <i data-lucide="users" class="w-6 h-6 text-blue-600"></i>
                         </div>
-                        <h2 class="text-xl font-bold text-slate-900">Estudiantes</h2>
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-900">Estudiantes</h2>
+                            <p id="student-count" class="text-slate-500 text-xs font-medium">0 registrados</p>
+                        </div>
                     </div>
                     <div class="flex flex-wrap gap-2">
+                        <button onclick="clearAllStudents()" class="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 transition-all">
+                            <i data-lucide="trash-2" class="w-5 h-5"></i> Limpiar Todo
+                        </button>
                         <button onclick="openModal('import')" class="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-600 font-bold rounded-xl hover:bg-green-100 transition-all">
                             <i data-lucide="file-spreadsheet" class="w-5 h-5"></i> Importar Excel
                         </button>
-                        <button onclick="openModal('student')" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all">
+                        <button onclick="openModal('student')" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-100">
                             <i data-lucide="user-plus" class="w-5 h-5"></i> Nuevo
                         </button>
                     </div>
                 </div>
 
                 <div id="student-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- JS will populate -->
+                    <!-- JS populate -->
                 </div>
             </section>
 
@@ -250,7 +256,13 @@
             localStorage.setItem('attendance', JSON.stringify(attendance));
             localStorage.setItem('observations', JSON.stringify(observations));
             updateGradesFilter();
+            updateStudentCount();
         };
+
+        function updateStudentCount() {
+            const countEl = document.getElementById('student-count');
+            if(countEl) countEl.innerText = `${students.length} registrados`;
+        }
 
         // --- Navigation ---
         function switchTab(tab) {
@@ -258,34 +270,88 @@
             document.getElementById(`section-${tab}`).classList.remove('hidden');
             
             document.querySelectorAll('nav button').forEach(b => b.classList.remove('tab-active'));
-            document.getElementById(`tab-${tab}`).classList.add('tab-active');
+            const activeBtn = document.getElementById(`tab-${tab}`);
+            if(activeBtn) activeBtn.classList.add('tab-active');
 
             if(tab === 'students') renderStudents();
             if(tab === 'attendance') renderAttendanceList();
             if(tab === 'reports') renderCharts();
         }
 
-        // --- Students ---
+        // --- Students Management ---
         function renderStudents() {
             const grid = document.getElementById('student-grid');
-            grid.innerHTML = students.map(s => `
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 group">
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <h3 class="font-bold text-slate-900">${s.name}</h3>
-                            <span class="text-xs font-bold bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">${s.grade}</span>
+            if(!grid) return;
+            
+            if(students.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full py-20 text-center bg-white rounded-2xl border-2 border-dashed border-slate-200">
+                        <i data-lucide="users" class="w-12 h-12 text-slate-300 mx-auto mb-4"></i>
+                        <p class="text-slate-500 font-medium">No hay estudiantes registrados.</p>
+                        <p class="text-slate-400 text-sm">Importa un archivo Excel o agrega uno manualmente.</p>
+                    </div>
+                `;
+            } else {
+                grid.innerHTML = students.map(s => `
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 group hover:shadow-md transition-all">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="font-bold text-slate-900">${s.name}</h3>
+                                <span class="text-xs font-bold bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">${s.grade}</span>
+                            </div>
+                            <div class="flex gap-1">
+                                <button onclick="editStudent('${s.id}')" class="p-2 text-slate-400 hover:text-blue-600 transition-colors" title="Editar"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                                <button onclick="deleteStudent('${s.id}')" class="p-2 text-slate-400 hover:text-red-600 transition-colors" title="Eliminar"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                            </div>
                         </div>
-                        <div class="flex gap-1">
-                            <button onclick="editStudent('${s.id}')" class="p-2 text-slate-400 hover:text-blue-600"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
-                            <button onclick="deleteStudent('${s.id}')" class="p-2 text-slate-400 hover:text-red-600"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        <div class="text-sm text-slate-500 flex items-center gap-2">
+                            <i data-lucide="phone" class="w-3 h-3"></i> ${s.phone || 'No registrado'}
                         </div>
                     </div>
-                    <div class="text-sm text-slate-500 flex items-center gap-2">
-                        <i data-lucide="phone" class="w-3 h-3"></i> ${s.phone || 'No registrado'}
-                    </div>
-                </div>
-            `).join('');
+                `).join('');
+            }
             lucide.createIcons();
+            updateStudentCount();
+        }
+
+        function clearAllStudents() {
+            if(students.length === 0) {
+                alert('No hay estudiantes para eliminar.');
+                return;
+            }
+            
+            const confirm1 = confirm('¿ESTÁS SEGURO? Esta acción eliminará a TODOS los estudiantes de la lista.');
+            if(confirm1) {
+                const confirm2 = confirm('¿Realmente quieres borrar todo el listado? Esta acción no se puede deshacer.');
+                if(confirm2) {
+                    students = [];
+                    // Opcional: También podrías querer limpiar la asistencia y observaciones si es un año nuevo
+                    // attendance = {};
+                    // observations = [];
+                    saveData();
+                    renderStudents();
+                    alert('Listado de estudiantes vaciado correctamente.');
+                }
+            }
+        }
+
+        function deleteStudent(id) {
+            const student = students.find(s => s.id === id);
+            if(confirm(`¿Estás seguro de eliminar a ${student.name}?`)) {
+                students = students.filter(s => s.id !== id);
+                saveData();
+                renderStudents();
+            }
+        }
+
+        function editStudent(id) {
+            const s = students.find(x => x.id === id);
+            document.getElementById('edit-id').value = s.id;
+            document.getElementById('s-name').value = s.name;
+            document.getElementById('s-grade').value = s.grade;
+            document.getElementById('s-phone').value = s.phone;
+            openModal('student');
+            document.getElementById('modal-title').innerText = 'Editar Estudiante';
         }
 
         document.getElementById('student-form').onsubmit = (e) => {
@@ -307,25 +373,7 @@
             renderStudents();
         };
 
-        function deleteStudent(id) {
-            if(confirm('¿Eliminar estudiante?')) {
-                students = students.filter(s => s.id !== id);
-                saveData();
-                renderStudents();
-            }
-        }
-
-        function editStudent(id) {
-            const s = students.find(x => x.id === id);
-            document.getElementById('edit-id').value = s.id;
-            document.getElementById('s-name').value = s.name;
-            document.getElementById('s-grade').value = s.grade;
-            document.getElementById('s-phone').value = s.phone;
-            openModal('student');
-            document.getElementById('modal-title').innerText = 'Editar Estudiante';
-        }
-
-        // --- Attendance ---
+        // --- Attendance Management ---
         function loadAttendance() {
             renderAttendanceList();
         }
@@ -334,36 +382,41 @@
             const date = document.getElementById('attendance-date').value;
             const gradeFilter = document.getElementById('filter-grade-attendance').value;
             const list = document.getElementById('attendance-list');
+            if(!list) return;
             
             const filtered = students.filter(s => gradeFilter === 'all' || s.grade === gradeFilter);
             
-            list.innerHTML = filtered.map(s => {
-                const record = attendance[date]?.[s.id] || { status: 'pending' };
-                return `
-                    <tr class="hover:bg-slate-50">
-                        <td class="px-6 py-4">
-                            <div class="font-medium text-slate-900">${s.name}</div>
-                            <div class="text-xs text-slate-400">${s.grade}</div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <div class="flex justify-center gap-2">
-                                <button onclick="markAttendance('${s.id}', 'present')" class="p-2 rounded-lg ${record.status === 'present' ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-400'}">
-                                    <i data-lucide="check-circle-2" class="w-6 h-6"></i>
-                                </button>
-                                <button onclick="markAttendance('${s.id}', 'absent')" class="p-2 rounded-lg ${record.status === 'absent' ? 'bg-red-100 text-red-600' : 'bg-slate-100 text-slate-400'}">
-                                    <i data-lucide="x-circle" class="w-6 h-6"></i>
-                                </button>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 text-right no-print">
-                            <div class="flex justify-end gap-2">
-                                <button onclick="openNoteModal('${s.id}', 'excuse')" class="p-2 text-slate-400 hover:text-blue-600" title="Excusa"><i data-lucide="info" class="w-5 h-5"></i></button>
-                                <button onclick="openNoteModal('${s.id}', 'observation')" class="p-2 text-slate-400 hover:text-amber-600" title="Observación"><i data-lucide="message-square" class="w-5 h-5"></i></button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
+            if(filtered.length === 0) {
+                list.innerHTML = `<tr><td colspan="3" class="px-6 py-10 text-center text-slate-400 italic">No hay estudiantes para mostrar.</td></tr>`;
+            } else {
+                list.innerHTML = filtered.map(s => {
+                    const record = attendance[date]?.[s.id] || { status: 'pending' };
+                    return `
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="px-6 py-4">
+                                <div class="font-medium text-slate-900">${s.name}</div>
+                                <div class="text-xs text-slate-400">${s.grade}</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex justify-center gap-2">
+                                    <button onclick="markAttendance('${s.id}', 'present')" class="p-2 rounded-lg transition-all ${record.status === 'present' ? 'bg-green-100 text-green-600 shadow-sm' : 'bg-slate-100 text-slate-400 hover:bg-green-50'}">
+                                        <i data-lucide="check-circle-2" class="w-6 h-6"></i>
+                                    </button>
+                                    <button onclick="markAttendance('${s.id}', 'absent')" class="p-2 rounded-lg transition-all ${record.status === 'absent' ? 'bg-red-100 text-red-600 shadow-sm' : 'bg-slate-100 text-slate-400 hover:bg-red-50'}">
+                                        <i data-lucide="x-circle" class="w-6 h-6"></i>
+                                    </button>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-right no-print">
+                                <div class="flex justify-end gap-2">
+                                    <button onclick="openNoteModal('${s.id}', 'excuse')" class="p-2 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-blue-50" title="Excusa"><i data-lucide="info" class="w-5 h-5"></i></button>
+                                    <button onclick="openNoteModal('${s.id}', 'observation')" class="p-2 text-slate-400 hover:text-amber-600 rounded-lg hover:bg-amber-50" title="Observación"><i data-lucide="message-square" class="w-5 h-5"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
             lucide.createIcons();
         }
 
@@ -405,50 +458,67 @@
                 }
                 saveData();
                 closeModal();
+                renderAttendanceList();
             };
             
             openModal('note');
         }
 
-        // --- Excel ---
+        // --- Excel Processing ---
         function processExcel() {
-            const file = document.getElementById('excel-file').files[0];
-            if(!file) return;
+            const fileInput = document.getElementById('excel-file');
+            const file = fileInput.files[0];
+            if(!file) {
+                alert('Por favor selecciona un archivo.');
+                return;
+            }
 
             const reader = new FileReader();
             reader.onload = (e) => {
-                const data = e.target.result;
-                const workbook = XLSX.read(data, { type: 'binary' });
-                const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                const json = XLSX.utils.sheet_to_json(sheet);
+                try {
+                    const data = e.target.result;
+                    const workbook = XLSX.read(data, { type: 'binary' });
+                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const json = XLSX.utils.sheet_to_json(sheet);
 
-                json.forEach(row => {
-                    students.push({
-                        id: Date.now().toString() + Math.random(),
-                        name: row.Nombre || row.nombre || "Sin Nombre",
-                        grade: row.Grado || row.grado || "Sin Grado",
-                        phone: row.Telefono || row.telefono || ""
+                    if(json.length === 0) {
+                        alert('El archivo parece estar vacío.');
+                        return;
+                    }
+
+                    json.forEach(row => {
+                        students.push({
+                            id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+                            name: row.Nombre || row.nombre || row.NAME || "Sin Nombre",
+                            grade: row.Grado || row.grado || row.GRADE || "Sin Grado",
+                            phone: row.Telefono || row.telefono || row.PHONE || ""
+                        });
                     });
-                });
 
-                saveData();
-                closeModal();
-                renderStudents();
-                alert('Importación completada');
+                    saveData();
+                    closeModal();
+                    renderStudents();
+                    fileInput.value = '';
+                    alert(`¡Éxito! Se han importado ${json.length} estudiantes.`);
+                } catch (err) {
+                    alert('Error al procesar el archivo Excel. Asegúrate de que el formato sea correcto.');
+                    console.error(err);
+                }
             };
             reader.readAsBinaryString(file);
         }
 
-        // --- Reports & Charts ---
+        // --- Charts & Reports ---
         let myChart = null;
         function renderCharts() {
-            const ctx = document.getElementById('gradeChart').getContext('2d');
+            const canvas = document.getElementById('gradeChart');
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
             if(myChart) myChart.destroy();
 
-            const grades = [...new Set(students.map(s => s.grade))];
+            const grades = [...new Set(students.map(s => s.grade))].sort();
             const data = grades.map(g => {
-                const count = students.filter(s => s.grade === g).length;
-                return count;
+                return students.filter(s => s.grade === g).length;
             });
 
             myChart = new Chart(ctx, {
@@ -459,32 +529,38 @@
                         label: 'Estudiantes por Grado',
                         data: data,
                         backgroundColor: '#3b82f6',
-                        borderRadius: 8
+                        borderRadius: 8,
+                        hoverBackgroundColor: '#2563eb'
                     }]
                 },
                 options: {
                     responsive: true,
-                    plugins: { legend: { display: false } }
+                    maintainAspectRatio: true,
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: { backgroundColor: '#1e293b', padding: 12, borderRadius: 8 }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, grid: { display: false } },
+                        x: { grid: { display: false } }
+                    }
                 }
             });
         }
 
-        // --- Gemini AI Integration ---
+        // --- Gemini AI ---
         async function askGemini() {
             const insightsBox = document.getElementById('ai-insights');
             const content = document.getElementById('ai-content');
             insightsBox.classList.remove('hidden');
             content.innerText = "Analizando patrones de asistencia y comportamiento...";
 
-            // Preparamos un resumen de datos para la IA
             const summary = {
                 totalStudents: students.length,
                 totalObservations: observations.length,
-                recentAbsences: Object.values(attendance).slice(-5).map(day => Object.values(day).filter(r => r.status === 'absent').length)
+                attendanceDays: Object.keys(attendance).length
             };
 
-            // NOTA: Para que esto funcione, el usuario debe tener su API KEY configurada en el navegador
-            // o podemos usar un prompt para pedirla. Aquí simulamos la lógica.
             const apiKey = localStorage.getItem('GEMINI_API_KEY');
             if(!apiKey) {
                 const key = prompt("Por favor, ingresa tu GEMINI_API_KEY para obtener análisis de IA:");
@@ -504,7 +580,7 @@
                             parts: [{
                                 text: `Actúa como un experto director escolar. Analiza estos datos: ${JSON.stringify(summary)}. 
                                 Dame 3 consejos breves para mejorar la asistencia y el clima escolar basándote en estos números. 
-                                Responde en español de forma motivadora.`
+                                Responde en español de forma motivadora y profesional.`
                             }]
                         }]
                     })
@@ -517,7 +593,7 @@
             }
         }
 
-        // --- Helpers ---
+        // --- UI Helpers ---
         function openModal(type) {
             document.getElementById('modal-overlay').classList.remove('hidden');
             document.getElementById(`modal-${type}`).classList.remove('hidden');
@@ -533,6 +609,7 @@
 
         function updateGradesFilter() {
             const filter = document.getElementById('filter-grade-attendance');
+            if(!filter) return;
             const grades = [...new Set(students.map(s => s.grade))].sort();
             filter.innerHTML = '<option value="all">Todos los grados</option>' + 
                 grades.map(g => `<option value="${g}">${g}</option>`).join('');
@@ -548,10 +625,12 @@
             a.click();
         }
 
-        // --- Initialization ---
+        // --- App Init ---
         window.onload = () => {
-            document.getElementById('attendance-date').value = new Date().toISOString().split('T')[0];
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('attendance-date').value = today;
             updateGradesFilter();
+            updateStudentCount();
             switchTab('attendance');
             lucide.createIcons();
         };
